@@ -32,7 +32,6 @@ float2 CalModule(float2 rand_pair, float2 cor, float a, float2 w, float v)
     return float2(rand_pair.x * res, rand_pair.y * res);
 }
 
-
 //计算最终的频谱高度
 float2 CalSpectrumHeight(float2 cor, float t, float2 rand_pair, float a, float2 w, float v)
 {

@@ -21,3 +21,4 @@ float2 TransferEulerIndentityToComplexConjugate(float exp)
 {
     return float2(cos(exp), sin(exp));
 }
+
