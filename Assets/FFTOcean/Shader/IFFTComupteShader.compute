@@ -19,5 +19,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int reverse = (id.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
     uint2 pat_cor = cor;
     pat_cor.x += reverse * (GroupSize / 2);
-    OutputTex[id.xy] = weight * InputTex[pat_cor] + InputTex[cor];
+    OutputTex[id.xy] = reverse * weight * InputTex[pat_cor] + InputTex[cor];
 }

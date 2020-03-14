@@ -35,7 +35,7 @@ class IFFTUtil
 
     void InitComputeShaderData()
     {
-        m_kernel = m_param.ComputeShader.FindKernel(CommonData.ComputeKernelName);
+        m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
     }
 
     public void Begin()
@@ -55,20 +55,20 @@ class IFFTUtil
     void CalStageOutput(int stage)
     {
         bool even = stage % 2 != 0;
-        m_param.ComputeShader.SetInt(CommonData.ComputeStageName, (int)stage);
-        m_param.ComputeShader.SetInt(CommonData.ComputeStageGroupName, (int)Mathf.Exp(stage+1));
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, (int)stage);
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, (int)Mathf.Exp(stage+1));
         //设置ping pong坐标翻转操作
         if(!even)
         {
-            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PingTexName);
-            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PongTexName);
+            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.IFFTComputeInputBufferName, m_param.PingTexName);
+            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.IFFTComputeInputBufferName, m_param.PongTexName);
         }
         else
         {
-            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PongTexName);
-            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PingTexName);
+            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.IFFTComputeInputBufferName, m_param.PongTexName);
+            m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.IFFTComputeInputBufferName, m_param.PingTexName);
         }
-        m_param.ComputeShader.Dispatch(m_kernel, CommonData.ComputeThreadSize.x, CommonData.ComputeThreadSize.y, CommonData.ComputeThreadSize.z);
+        m_param.ComputeShader.Dispatch(m_kernel, CommonData.IFFTComputeThreadSize.x, CommonData.IFFTComputeThreadSize.y, CommonData.IFFTComputeThreadSize.z);
     }
 
     void OnDone()
