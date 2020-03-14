@@ -12,12 +12,12 @@ int GroupSize;
 [numthreads(1024, 1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    uint2 cor;
+    uint2 cor = id;
     cor.x = id.x;
     cor.y = Stage;
     float weight = LutTex[cor];
     int reverse = (id.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
-    int pat_cor = cor;
+    uint2 pat_cor = cor;
     pat_cor.x += reverse * (GroupSize / 2);
     OutputTex[id.xy] = weight * InputTex[pat_cor] + InputTex[cor];
 }
