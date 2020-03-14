@@ -12,6 +12,7 @@ class IFFTUtil
         public List<int> Input;
         public string PingTexName;
         public string PongTexName;
+        public string BufferFlyLutTexName;
     }
     public bool Done
     {
@@ -46,15 +47,18 @@ class IFFTUtil
     {
         for(int i=0; i<m_stage_count; ++i)
         {
-            CalStageOutput((i % 2) == 0);
+            CalStageOutput(i);
         }
         OnDone();
     }
 
-    void CalStageOutput(bool even)
+    void CalStageOutput(int stage)
     {
+        bool even = stage % 2 != 0;
+        m_param.ComputeShader.SetInt(CommonData.ComputeStageName, (int)stage);
+        m_param.ComputeShader.SetInt(CommonData.ComputeStageGroupName, (int)Mathf.Exp(stage+1));
         //设置ping pong坐标翻转操作
-        if(even)
+        if(!even)
         {
             m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PingTexName);
             m_param.ComputeShader.SetTextureFromGlobal(m_kernel, CommonData.ComputeInputBufferName, m_param.PongTexName);
