@@ -14,5 +14,5 @@ public class CommonData
     static public string IFFTComputeStageGroupName = "GroupSize";
     static public string LutComputeKernelName = "CSMain";
     static public string LutComputeBufferName = "LutTex";
-    static public string LutComputeSizeName = "Name";
+    static public string LutComputeSizeName = "Size";
 }

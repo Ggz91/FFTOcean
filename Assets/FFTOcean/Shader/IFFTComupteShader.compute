@@ -15,9 +15,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uint2 cor = id;
     cor.x = id.x;
     cor.y = Stage;
-    float weight = LutTex[cor];
+    float4 weight = LutTex[cor];
     int reverse = (id.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
     uint2 pat_cor = cor;
     pat_cor.x += reverse * (GroupSize / 2);
-    OutputTex[id.xy] = reverse * weight * InputTex[pat_cor] + InputTex[cor];
+    OutputTex[id.xy] = float4(reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x, reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x, reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z, reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z);
 }

@@ -30,7 +30,8 @@ public class LutUtil
         m_size = new int[2];
         m_size[0] = m_param.Size;
         m_size[1] = (int)Mathf.Log(2, m_param.Size);
-        m_param.ComputeShader.SetInts(CommonData.LutComputeSizeName, m_size);
+        ComputeBuffer buffer = new ComputeBuffer(2,4);
+        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.LutComputeSizeName, buffer);
         m_lut_rt = RenderTexture.GetTemporary(m_size[0], m_size[1], 32);
         int lut_id = Shader.PropertyToID(CommonData.LutComputeSizeName);
         m_param.ComputeShader.SetTexture(m_kernel, lut_id, m_lut_rt);
