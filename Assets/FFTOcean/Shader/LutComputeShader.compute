@@ -9,7 +9,9 @@ RWBuffer<int> Size;
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    float exponent = 2 * 3.1415926 * id.x / Size[0];
+    int group_size = pow(2, id.y + 1);
+    int index = id.x % group_size;
+    float exponent = 2 * 3.1415926 * index / group_size;
     //欧拉恒等式
     float real = cos(exponent);
     float ima = sin(exponent);
