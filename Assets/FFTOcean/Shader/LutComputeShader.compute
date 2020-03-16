@@ -6,13 +6,12 @@
 RWTexture2D<float4> LutTex;
 RWBuffer<int> Size;
 
-[numthreads(8,8,1)]
+[numthreads(8,10,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int group_size = pow(2, id.y+1);
     float exponent = 2 * 3.1415926 * id.x / Size[0];
     //欧拉恒等式
     float real = cos(exponent);
     float ima = sin(exponent);
-    LutTex[id.xy] = float4(real, real, ima, ima);
+    LutTex[id.xy] = float4(real, 0, ima, 1);
 }
