@@ -31,7 +31,7 @@ public class LutUtil
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.LutComputeKernelName);
         m_size[0] = m_param.Size;
-        m_size[1] = (int)Mathf.Log(m_param.Size, 2);
+        m_size[1] = Mathf.NextPowerOfTwo((int)Mathf.Log(m_param.Size, 2));
         m_buffer = new ComputeBuffer(2,4);
         m_buffer.SetData(m_size);
         m_param.ComputeShader.SetBuffer(m_kernel, CommonData.LutComputeSizeName, m_buffer);
@@ -44,7 +44,7 @@ public class LutUtil
     
     public RenderTexture Execute()
     {
-        m_param.ComputeShader.Dispatch(m_kernel, m_size[0], m_size[1], 1);
+        m_param.ComputeShader.Dispatch(m_kernel, m_size[0]/8, m_size[1]/8, 1);
         Debug.Log("[LutUtil] execute done");
         return m_lut_rt;
     }
