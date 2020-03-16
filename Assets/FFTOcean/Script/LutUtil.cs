@@ -27,6 +27,8 @@ public class LutUtil
         Debug.Log("[LutUtil] init done");
     }
 
+  
+
     void InitComputeShader()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.LutComputeKernelName);

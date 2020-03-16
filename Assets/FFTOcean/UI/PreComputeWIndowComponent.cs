@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using UnityEditor;
 
 public class PreComputeWIndowComponent 
 {
@@ -41,6 +42,22 @@ public class PreComputeWIndowComponent
         CommonUtil.SaveRenderTexture(rt);
         m_lut_util.Leave();
         Debug.Log("=============[GenLut] Leave==============");
+    }
+
+    public void Enter()
+    {
+        InitDefaultValues();
+    }
+     void InitDefaultComputeShader()
+    {
+        string default_compute_shader = @"Assets/FFTOcean/Shader/LutComputeShader.compute";
+        LutComputeShader = AssetDatabase.LoadAssetAtPath(default_compute_shader, typeof(ComputeShader)) as ComputeShader;
+    }
+
+    void InitDefaultValues()
+    {
+        //默认的compute shader
+        InitDefaultComputeShader();
     }
     #endregion
 }
