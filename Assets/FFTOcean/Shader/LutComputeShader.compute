@@ -10,11 +10,12 @@ RWBuffer<int> Size;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int group_size = pow(2, id.y + 1);
+    int half_group_size = pow(2, id.y);
     int index = id.x % group_size;
-    index = (index >= (group_size/2)) ? (index - (group_size/2)) : index;
+    index = (index >= half_group_size) ? (index - half_group_size) : index;
     float exponent = 2 * 3.1415926 * index / group_size;
     //欧拉恒等式
-    float real = cos(exponent);
-    float ima = sin(exponent);
+    float real = (1+cos(exponent))/2;
+    float ima = (1+sin(exponent))/2;
     LutTex[id.xy] = float4(real, 0, ima, 1);
 }
