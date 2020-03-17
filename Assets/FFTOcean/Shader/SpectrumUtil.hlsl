@@ -11,7 +11,7 @@
 
     return : PhillipsSpectrum
 */
-float CalPhillipsSpectrum(float2 cor, float a, float2 w, float v)
+float CalPhillipsModule(float2 cor, float a, float2 w, float v)
 {
     float s = v * v / G;
     float abs_dot = abs(cor * w);
@@ -24,20 +24,20 @@ float CalPhillipsSpectrum(float2 cor, float a, float2 w, float v)
 }
 
 //计算频谱的系数
-float2 CalModule(float2 rand_pair, float2 cor, float a, float2 w, float v)
+float2 CalFModule(float2 rand_pair, float2 cor, float a, float2 w, float v)
 {
-    float phillips = CalPhillipsSpectrum(cor, a, w, v);
+    float phillips = CalPhillipsModule(cor, a, w, v);
     float res = 1 / SQRT_2 * phillips;
 
     return float2(rand_pair.x * res, rand_pair.y * res);
 }
 
 //计算最终的频谱高度
-float2 CalSpectrumHeight(float2 cor, float t, float2 rand_pair, float a, float2 w, float v)
+float2 CalPhillipsSpectrum(float2 cor, float t, float2 rand_pair, float a, float2 w, float v)
 {
     float exp = sqrt(G * CalMagnitude(cor)) * t;
-    float2 f0 = CalModule(rand_pair, cor, a, w, v);
-    float2 f1 = CalModule(rand_pair, -cor, a, w, v);
+    float2 f0 = CalFModule(rand_pair, cor, a, w, v);
+    float2 f1 = CalFModule(rand_pair, -cor, a, w, v);
     float2 f0_eular = TransferEulerIndentityToComplexConjugate(exp);
     float2 f1_eular = TransferEulerIndentityToComplexConjugate(-exp);
 

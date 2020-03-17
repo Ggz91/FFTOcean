@@ -20,10 +20,12 @@ public class FFTOceanMonoComponent : MonoBehaviour
     #region  method
     void Start()
     {
+        InitSpectrum();
     }
     void InitSpectrum()
     {
         m_spectrum_util.InitData(InitParamData.SpectrumParam);
+        Debug.Log("[SpectrumUtil] init done");
     }
     public void InitData(InitParam initParam)
     {
@@ -31,19 +33,23 @@ public class FFTOceanMonoComponent : MonoBehaviour
 
         InitSpectrum();
     }
-
     void Update()
     {
         //1、生成spectrum
-        
+        GenSpectrum();
         //2、根据specturm生成高度图
-
-        
     }
 
     void GenSpectrum()
     {
+        m_spectrum_util.Execute();
+        //Debug.Log("[SpectrumUtil] execute done. time : " + Time.time.ToString());
+    }
 
+    void OnDestory()
+    {
+        m_spectrum_util.Leave();
+        m_spectrum_util = null;
     }
     #endregion
 }

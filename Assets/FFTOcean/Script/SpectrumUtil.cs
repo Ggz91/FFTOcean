@@ -15,6 +15,7 @@ public class SpectrumUtil
     }
     InitParam m_param;
     int m_kernel;
+    RenderTexture m_spectrum_tex;
     #endregion
 
     #region  method
@@ -32,6 +33,10 @@ public class SpectrumUtil
         Vector2 wind_dir = m_param.Wind.normalized;
         float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
         float wind_speed = m_param.Wind.magnitude;
+        m_spectrum_tex = new RenderTexture(m_param.Size.x, m_param.Size.y,32);
+        m_spectrum_tex.enableRandomWrite = true;
+        m_spectrum_tex.Create();
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
         m_param.ComputeShader.SetFloats(CommonData.SpectrumComputeWindDirName, wind_dir_arr);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeWindSpeedName, wind_speed);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeAmplitudeName, m_param.Amplitude);
@@ -45,10 +50,15 @@ public class SpectrumUtil
         m_param.ComputeShader.SetFloats(CommonData.SpectrumComputeRandPairName, rand_pair_arr);
     }
 
-    void Execute()
+    public void Execute()
     {
         UpdateComputeShaderDynamicData();
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size.x/8, m_param.Size.y/8, 1);
+    }
+
+    public void Leave()
+    {
+        RenderTexture.DestroyImmediate(m_spectrum_tex);
     }
     #endregion
 }

@@ -19,7 +19,6 @@ public class FFTOceanEidtorWindow : OdinMenuEditorWindow
     bool m_open = false;
     protected override OdinMenuTree BuildMenuTree()
     {
-        
         m_tree = new OdinMenuTree();
         m_tree.Selection.SelectionChanged += OnSelectedChanged;
         m_tree.Selection.SupportsMultiSelect = false;

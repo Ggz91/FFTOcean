@@ -10,7 +10,7 @@ public class RealTimeComputeComponent
     [InfoBox(@"实时渲染之前的一些参数设置：
     1、Mesh相关
     2、海洋参数设置")]
-
+    
     [BoxGroup("Mesh Param")]
     [MinValue(1)]
     public Vector2Int Size = new Vector2Int(256, 256);
@@ -26,13 +26,13 @@ public class RealTimeComputeComponent
     public ComputeShader SpectrumShader;
 
     [BoxGroup("Spectrum")]
-    public Vector2Int SpectrumSampleSize;
+    public Vector2Int SpectrumSampleSize = new Vector2Int(16, 16);
 
     [BoxGroup("Spectrum")]
-    public Vector2 Wind;
+    public Vector2 Wind = new Vector2(1, 1);
 
     [BoxGroup("Spectrum")]
-    public float Amplitude;
+    public float Amplitude = 1;
 
     [Button("Gen Ocean")]
     void GenOcean()
@@ -74,6 +74,7 @@ public class RealTimeComputeComponent
     Mesh GenMeshImp()
     {
         Mesh mesh = new Mesh();
+        mesh.name = @"FFTOceanMesh";
         List<Vector3> pos = new List<Vector3>();
         List<Vector3> normal = new List<Vector3>();
         List<Vector2> uv = new List<Vector2>();
@@ -119,6 +120,8 @@ public class RealTimeComputeComponent
         mesh.SetUVs(0, uv);
         mesh.SetNormals(normal.ToArray());
         mesh.SetIndices(indice.ToArray(), MeshTopology.Triangles, 0);
+        Debug.Log("[GenMesh] size : " + Size.ToString()
+        + " vertices count : " + mesh.vertexCount.ToString());
         return mesh;
     }
 

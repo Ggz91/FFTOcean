@@ -2,6 +2,7 @@
 
 #define G 9.8
 #define SQRT_2 1.414213562373095
+#define PI 3.1415926
 
 //共轭复数
 float2 CalComplexConjugate(float2 plu)
