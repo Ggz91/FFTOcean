@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
+using UnityEditor;
 
 public class RealTimeComputeComponent
 {
     [InfoBox(@"实时渲染之前的一些参数设置：
-    1、Mesh相关")]
+    1、Mesh相关
+    2、海洋参数设置")]
 
     [BoxGroup("Mesh Param")]
     [MinValue(1)]
-    public Vector2Int Size = new Vector2Int(2, 2);
+    public Vector2Int Size = new Vector2Int(256, 256);
     
     [BoxGroup("Mesh Param")]
     public Vector3 Position = Vector3.zero;
@@ -20,16 +22,53 @@ public class RealTimeComputeComponent
     [MinValue(0.000000001f)]
     public float UnitSize = 0.5f;
 
-    [BoxGroup("Mesh Param")]
-    [Button("Gen Mesh")]
-    void GenMesh()
+    [BoxGroup("Spectrum")]
+    public ComputeShader SpectrumShader;
+
+    [BoxGroup("Spectrum")]
+    public Vector2Int SpectrumSampleSize;
+
+    [BoxGroup("Spectrum")]
+    public Vector2 Wind;
+
+    [BoxGroup("Spectrum")]
+    public float Amplitude;
+
+    [Button("Gen Ocean")]
+    void GenOcean()
     {
-        //生成mesh
+      
         Mesh mesh = GenMeshImp();
+        GenGameObj(mesh);
+        Debug.Log("[GenMesh] Done");
+    }
+
+    void GenGameObj(Mesh mesh)
+    {
+        //创建海面
         GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Plane);
         obj.GetComponent<MeshFilter>().sharedMesh = mesh;
         obj.transform.position = Position;
-        Debug.Log("[GenMesh] Done");
+
+        //添加FFTOCean脚本
+        obj.AddComponent<FFTOceanMonoComponent>();
+        FillObjData(obj);
+    }
+
+    void FillObjData(GameObject obj)
+    {
+        FFTOceanMonoComponent.InitParam init_param = new FFTOceanMonoComponent.InitParam();
+        //填充相关数据
+        FillSpectrumData(ref init_param);
+        obj.GetComponent<FFTOceanMonoComponent>().InitData(init_param);
+    }
+
+    void FillSpectrumData(ref FFTOceanMonoComponent.InitParam param)
+    {
+        param.SpectrumParam.Size = SpectrumSampleSize;
+        param.SpectrumParam.Wind = Wind;
+        param.SpectrumParam.Amplitude = Amplitude;
+        param.SpectrumParam.ComputeShader = SpectrumShader;
     }
 
     Mesh GenMeshImp()
@@ -81,5 +120,22 @@ public class RealTimeComputeComponent
         mesh.SetNormals(normal.ToArray());
         mesh.SetIndices(indice.ToArray(), MeshTopology.Triangles, 0);
         return mesh;
+    }
+
+    public void Enter()
+    {
+        InitDefaultValues();
+    }
+
+     void InitDefaultComputeShader()
+    {
+        string default_compute_shader = @"Assets/FFTOcean/Shader/SpectrumComputeShader.compute";
+        SpectrumShader = AssetDatabase.LoadAssetAtPath(default_compute_shader, typeof(ComputeShader)) as ComputeShader;
+    }
+
+    void InitDefaultValues()
+    {
+        //默认的compute shader
+        InitDefaultComputeShader();
     }
 }

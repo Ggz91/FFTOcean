@@ -15,4 +15,11 @@ public class CommonData
     static public string LutComputeKernelName = "CSMain";
     static public string LutComputeBufferName = "LutTex";
     static public string LutComputeSizeName = "Size";
+    static public string SpectrumComputeKernelName = "CSMain";
+    static public string SpectrumComputeSizeName = "Size";
+    static public string SpectrumComputeTimeName = "Size";
+    static public string SpectrumComputeWindDirName = "WindDir";
+    static public string SpectrumComputeWindSpeedName = "WindSpeed";
+    static public string SpectrumComputeRandPairName = "RandomPair";
+    static public string SpectrumComputeAmplitudeName = "Amplitude";
 }

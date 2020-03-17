@@ -34,6 +34,10 @@ public class FFTOceanEidtorWindow : OdinMenuEditorWindow
         {
             m_pre_compute_component.Enter();
         }
+        else if(m_tree.Selection.SelectedValue.GetType() == m_realtime_compute_component.GetType())
+        {
+            m_realtime_compute_component.Enter();
+        }
     }
     void OnSelectedChanged(SelectionChangedType type)
     {

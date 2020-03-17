@@ -48,7 +48,7 @@ public class PreComputeWIndowComponent
     {
         InitDefaultValues();
     }
-     void InitDefaultComputeShader()
+    void InitDefaultComputeShader()
     {
         string default_compute_shader = @"Assets/FFTOcean/Shader/LutComputeShader.compute";
         LutComputeShader = AssetDatabase.LoadAssetAtPath(default_compute_shader, typeof(ComputeShader)) as ComputeShader;

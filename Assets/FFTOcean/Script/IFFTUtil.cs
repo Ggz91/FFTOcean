@@ -6,7 +6,7 @@ class IFFTUtil
     #region var
     public struct InitParam
     {
-        public int RTid;    //用来更新到最好的RT id
+        public int RTid;    //用来更新的高度图RT id
         public ComputeShader ComputeShader; //用来并行计算的shader
         public int Size; //输入变量大小
         public List<int> Input;
