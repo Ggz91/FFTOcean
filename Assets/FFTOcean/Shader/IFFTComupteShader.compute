@@ -23,8 +23,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uint2 pat_cor;
     pat_cor.x = CalBitReverse(id.x);
     pat_cor.y = id.y;
-    float real = reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x, reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x, reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z;
-    float ima = reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x, reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z, reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z;
+    float real = reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x;
+    float ima = reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z;
     float mul_real = cos(2 * PI * id.x * id.x) / Size;
     float mul_ima = sin(2 * PI * id.x * id.x) / Size;
     OutputTex[id.xy] = float4(real * mul_real - ima * mul_ima,0, ima * mul_real + real * mul_ima, 0);;
