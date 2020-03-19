@@ -25,7 +25,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     pat_cor.y = id.y;
     float real = reverse * weight.x * InputTex[pat_cor].x + InputTex[cor].x;
     float ima = reverse * weight.z * InputTex[pat_cor].z + InputTex[cor].z;
-    float mul_real = cos(2 * PI * id.x * id.x) / Size;
-    float mul_ima = sin(2 * PI * id.x * id.x) / Size;
+    float mul_real = cos((2 * PI * id.x * id.x) / Size);
+    float mul_ima = sin((2 * PI * id.x * id.x) / Size);
     OutputTex[id.xy] = float4(real * mul_real - ima * mul_ima,0, ima * mul_real + real * mul_ima, 0);;
 }
