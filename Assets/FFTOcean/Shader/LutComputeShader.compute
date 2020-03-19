@@ -15,7 +15,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     index = (index >= half_group_size) ? (index - half_group_size) : index;
     float exponent = 2 * 3.1415926 * index / group_size;
     //欧拉恒等式
-    float real = (1+cos(exponent))/2;
-    float ima = (1+sin(exponent))/2;
+    float real = cos(exponent);
+    float ima = sin(exponent);
     LutTex[id.xy] = float4(real, 0, ima, 1);
 }

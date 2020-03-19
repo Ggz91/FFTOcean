@@ -10,11 +10,14 @@ public class FFTOceanMonoComponent : MonoBehaviour
     {
         [SerializeField]
         public SpectrumUtil.InitParam SpectrumParam;
+        [SerializeField]
+        public IFFTUtil.InitParam IFFTParam;
     };
 
     [SerializeField]
     public InitParam InitParamData;
     SpectrumUtil m_spectrum_util = new SpectrumUtil();
+    IFFTUtil m_ifft_util = new IFFTUtil();
     #endregion
 
     #region  method
@@ -27,19 +30,38 @@ public class FFTOceanMonoComponent : MonoBehaviour
         m_spectrum_util.InitData(InitParamData.SpectrumParam);
         Debug.Log("[SpectrumUtil] init done");
     }
+    void InitIFFTUtil()
+    {
+        m_ifft_util.InitData(InitParamData.IFFTParam);
+    }
     public void InitData(InitParam initParam)
     {
         InitParamData = initParam;
 
         InitSpectrum();
+        InitIFFTUtil();
     }
     void Update()
     {
         //1、生成spectrum
         GenSpectrum();
+        
         //2、根据specturm生成高度图
+        IFFTUpdate();
+
+        //3、更新高度图到材质
+        UpdateMatHeightMap(m_ifft_util.ResTex);
     }
 
+    void UpdateMatHeightMap(RenderTexture rt)
+    {
+        Material mat = GetComponent<Material>();
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), rt);
+    }
+    void IFFTUpdate()
+    {
+        m_ifft_util.Update();
+    }
     void GenSpectrum()
     {
         m_spectrum_util.Execute();
@@ -50,6 +72,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
     {
         m_spectrum_util.Leave();
         m_spectrum_util = null;
+        m_ifft_util.Leave();
+        m_ifft_util = null;
     }
     #endregion
 }

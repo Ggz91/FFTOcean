@@ -23,5 +23,7 @@ public class CommonData
     static public string SpectrumComputeRandPairName = "RandomPair";
     static public string SpectrumComputeAmplitudeName = "Amplitude";
     static public string SpectrumComputeOutputTexName = "SpectrumTex";
-    static public string IFFTcomputeSizeName = "Size";
+    static public string IFFTComputeSizeName = "Size";
+    static public string IFFTComputeCalLineName = "ComputeLine";
+    static public string OCeanMatHeightTexName = "_OceanHeightMap";
 }
