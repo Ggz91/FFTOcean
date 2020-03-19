@@ -23,4 +23,5 @@ public class CommonData
     static public string SpectrumComputeRandPairName = "RandomPair";
     static public string SpectrumComputeAmplitudeName = "Amplitude";
     static public string SpectrumComputeOutputTexName = "SpectrumTex";
+    static public string IFFTcomputeSizeName = "Size";
 }

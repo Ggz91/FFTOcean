@@ -9,11 +9,11 @@ class IFFTUtil
         public int RTid;    //用来更新的高度图RT id
         public ComputeShader ComputeShader; //用来并行计算的shader
         public int Size; //输入变量大小
-        public List<int> Input;
         public string PingTexName;
         public string PongTexName;
         public string BufferFlyLutTexName;
     }
+
     public bool Done
     {
         get;
@@ -36,6 +36,7 @@ class IFFTUtil
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
+        m_param.ComputeShader.SetInt(CommonData.IFFTcomputeSizeName, m_param.Size);
     }
 
     public void Begin()

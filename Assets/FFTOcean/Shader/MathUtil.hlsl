@@ -23,3 +23,28 @@ float2 TransferEulerIndentityToComplexConjugate(float exp)
     return float2(cos(exp), sin(exp));
 }
 
+//bitreverse计算蝶形lut的另一个index
+uint CalBitReverse(uint inter)
+{
+    //最多到1024
+    int list[10];
+    int i=0;
+    for(;; ++i)
+    {
+        if(inter == 0 )
+        {
+            break;
+        }
+        uint cur = inter & 0x01;
+        list[i] = cur;
+        inter = inter >> 1;
+    }
+    
+    uint res = 0;
+    for(int j = 0; j<i; ++j)
+    {
+        res += list[j];
+        res >> 1; 
+    }
+    return res;
+}
