@@ -24,6 +24,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void Start()
     {
         InitSpectrum();
+        InitIFFTUtil();
     }
     void InitSpectrum()
     {
@@ -33,6 +34,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void InitIFFTUtil()
     {
         m_ifft_util.InitData(InitParamData.IFFTParam);
+        Debug.Log("[IFFTUtil] init done");
     }
     public void InitData(InitParam initParam)
     {
@@ -50,16 +52,18 @@ public class FFTOceanMonoComponent : MonoBehaviour
         IFFTUpdate();
 
         //3、更新高度图到材质
-        UpdateMatHeightMap(m_ifft_util.ResTex);
+        UpdateMatHeightMap();
     }
 
-    void UpdateMatHeightMap(RenderTexture rt)
+    void UpdateMatHeightMap()
     {
         Material mat = GetComponent<Material>();
-        mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), rt);
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), m_ifft_util.ResTex);
     }
     void IFFTUpdate()
     {
+        //更新高度图
+        m_ifft_util.SetHeightRenderTexture(m_spectrum_util.ResTex);
         m_ifft_util.Update();
     }
     void GenSpectrum()

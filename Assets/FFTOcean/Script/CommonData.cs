@@ -25,5 +25,6 @@ public class CommonData
     static public string SpectrumComputeOutputTexName = "SpectrumTex";
     static public string IFFTComputeSizeName = "Size";
     static public string IFFTComputeCalLineName = "ComputeLine";
+    static public string IFFTLutTexName = "LutTex";
     static public string OCeanMatHeightTexName = "_OceanHeightMap";
 }

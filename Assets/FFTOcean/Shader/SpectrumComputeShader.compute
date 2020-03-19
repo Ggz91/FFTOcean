@@ -6,7 +6,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> SpectrumTex;
-float Size[2];
+float Size;
 float Time;
 float WindDir[2];
 float WindSpeed;
@@ -17,8 +17,8 @@ float Amplitude;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     float2 cor;
-    cor.x = 2 * PI * (id.x - Size[0]/2)/Size[0];
-    cor.y = 2 * PI * (id.y - Size[1]/2)/Size[1];
+    cor.x = 2 * PI * (id.x - Size/2)/Size;
+    cor.y = 2 * PI * (id.y - Size/2)/Size;
     float2 wind_dir;
     wind_dir.x = WindDir[0];
     wind_dir.y = WindDir[1];

@@ -8,10 +8,17 @@ public class SpectrumUtil
     [System.Serializable]
     public struct InitParam
     {
-        public Vector2Int Size;
+        public int Size;
         public ComputeShader ComputeShader;
         public Vector2 Wind;
         public float Amplitude;
+    }
+    public RenderTexture ResTex
+    {
+        get
+        {
+            return m_spectrum_tex;
+        }
     }
     InitParam m_param;
     int m_kernel;
@@ -28,12 +35,11 @@ public class SpectrumUtil
     void InitComputeShaderStaticData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.SpectrumComputeKernelName);
-        int[] size = {m_param.Size.x, m_param.Size.y};
-        m_param.ComputeShader.SetInts(CommonData.SpectrumComputeSizeName, size);
+        m_param.ComputeShader.SetInts(CommonData.SpectrumComputeSizeName, m_param.Size);
         Vector2 wind_dir = m_param.Wind.normalized;
         float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
         float wind_speed = m_param.Wind.magnitude;
-        m_spectrum_tex = new RenderTexture(m_param.Size.x, m_param.Size.y,32);
+        m_spectrum_tex = new RenderTexture(m_param.Size, m_param.Size,32);
         m_spectrum_tex.enableRandomWrite = true;
         m_spectrum_tex.Create();
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
@@ -53,7 +59,7 @@ public class SpectrumUtil
     public void Execute()
     {
         UpdateComputeShaderDynamicData();
-        m_param.ComputeShader.Dispatch(m_kernel, m_param.Size.x/8, m_param.Size.y/8, 1);
+        m_param.ComputeShader.Dispatch(m_kernel, m_param.Size/8, m_param.Size/8, 1);
     }
 
     public void Leave()

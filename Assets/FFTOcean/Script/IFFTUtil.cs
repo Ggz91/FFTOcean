@@ -8,9 +8,7 @@ public class IFFTUtil
     {
         public ComputeShader ComputeShader; //用来并行计算的shader
         public int Size; //输入变量大小
-        public string PingTexName;
-        public string PongTexName;
-        public string BufferFlyLutTexName;
+        public RenderTexture BufferFlyLutTex;
     }
 
     public bool Done
@@ -39,11 +37,15 @@ public class IFFTUtil
         InitComputeShaderData();
         OnInit();
     }
-
+    public void SetHeightRenderTexture(RenderTexture rt)
+    {
+        m_param.BufferFlyLutTex = rt;
+    }
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
     }
 
     public void Begin()
@@ -86,7 +88,7 @@ public class IFFTUtil
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, m_pong_tex);
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, m_ping_tex);
         }
-        m_param.ComputeShader.Dispatch(m_kernel, CommonData.IFFTComputeThreadSize.x / 8, CommonData.IFFTComputeThreadSize.y / 8, CommonData.IFFTComputeThreadSize.z);
+        m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
     void OnDone()
