@@ -40,7 +40,7 @@ public class IFFTUtil
     }
     public void SetHeightRenderTexture(RenderTexture rt)
     {
-        m_param.BufferFlyLutTex = rt;
+        m_ping_tex = rt;
     }
     void InitComputeShaderData()
     {
@@ -115,7 +115,7 @@ public class IFFTUtil
     void OnInit()
     {
         m_stage_count = (int)(Mathf.Log(2, m_param.Size));
-        InitTex(m_ping_tex);
+        //InitTex(m_ping_tex);
         InitTex(m_pong_tex);
     }
 

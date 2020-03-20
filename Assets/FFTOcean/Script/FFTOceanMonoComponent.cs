@@ -62,7 +62,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
 
     void UpdateMatHeightMap()
     {
-        Material mat = GetComponent<Material>();
+        Material mat = GetComponent<MeshRenderer>().material;
         mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), m_ifft_util.ResTex);
     }
     void IFFTUpdate()
@@ -74,6 +74,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void GenSpectrum()
     {
         m_spectrum_util.Execute();
+        //CommonUtil.SaveRenderTexture(m_spectrum_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
+
         //Debug.Log("[SpectrumUtil] execute done. time : " + Time.time.ToString());
     }
 

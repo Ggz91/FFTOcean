@@ -35,7 +35,7 @@ public class SpectrumUtil
     void InitComputeShaderStaticData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.SpectrumComputeKernelName);
-        m_param.ComputeShader.SetInts(CommonData.SpectrumComputeSizeName, m_param.Size);
+        m_param.ComputeShader.SetInt(CommonData.SpectrumComputeSizeName, m_param.Size);
         Vector2 wind_dir = m_param.Wind.normalized;
         float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
         float wind_speed = m_param.Wind.magnitude;

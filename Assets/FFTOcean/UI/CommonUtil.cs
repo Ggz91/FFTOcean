@@ -6,19 +6,19 @@ using UnityEditor;
 
 public class CommonUtil
 {
-    static public void SaveRenderTexture(RenderTexture rt)
+    static public void SaveRenderTexture(RenderTexture rt, string path)
     {
         RenderTexture cur_rt = RenderTexture.active;
         RenderTexture.active = rt;
         Texture2D tex = new Texture2D(rt.width, rt.height);
         tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
         byte[] pixels = tex.EncodeToPNG();
-        string LutTexPath = @"Assets/BakedTextures";
-        if(!Directory.Exists(LutTexPath))
+        string folder_path = path.Substring(0, path.LastIndexOf(@"/"));
+        if(!Directory.Exists(folder_path))
         {
-            Directory.CreateDirectory(LutTexPath);
+            Directory.CreateDirectory(folder_path);
         }
-        FileStream stream = File.Open(LutTexPath + @"/LutTex.png", FileMode.Create);
+        FileStream stream = File.Open(path, FileMode.Create);
         BinaryWriter writer = new BinaryWriter(stream);
         writer.Write(pixels);
         stream.Close();
