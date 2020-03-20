@@ -6,7 +6,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
 {
     #region var
     [System.Serializable]
-    public struct InitParam
+    public class InitParam : ScriptableObject
     {
         [SerializeField]
         public SpectrumUtil.InitParam SpectrumParam;
@@ -21,10 +21,15 @@ public class FFTOceanMonoComponent : MonoBehaviour
     #endregion
 
     #region  method
+    void InitConfig()
+    {
+        Object obj = CommonUtil.LoadConfigAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam));
+        InitParam param = CommonUtil.LoadConfigAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam)) as InitParam;
+        InitData(param);
+    }
     void Start()
     {
-        InitSpectrum();
-        InitIFFTUtil();
+        InitConfig();
     }
     void InitSpectrum()
     {

@@ -71,11 +71,14 @@ public class RealTimeComputeComponent
 
     void FillObjData(GameObject obj)
     {
-        FFTOceanMonoComponent.InitParam init_param = new FFTOceanMonoComponent.InitParam();
+        FFTOceanMonoComponent.InitParam init_param = ScriptableObject.CreateInstance<FFTOceanMonoComponent.InitParam>();
         //填充相关数据
         FillSpectrumData(ref init_param);
         FillIFFTData(ref init_param);
         obj.GetComponent<FFTOceanMonoComponent>().InitData(init_param);
+
+        //保存成配置
+        CommonUtil.SaveConfigAsset(init_param, UICommonData.IFFTOceanInitConfig);
     }
 
     void FillSpectrumData(ref FFTOceanMonoComponent.InitParam param)

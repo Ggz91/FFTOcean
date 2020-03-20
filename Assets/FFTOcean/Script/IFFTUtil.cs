@@ -4,6 +4,7 @@ using UnityEngine;
 public class IFFTUtil
 {
     #region var
+    [System.Serializable]
     public struct InitParam
     {
         public ComputeShader ComputeShader; //用来并行计算的shader
@@ -45,7 +46,10 @@ public class IFFTUtil
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
-        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
+        if(null != m_param.BufferFlyLutTex)
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
+        }
     }
 
     public void Begin()

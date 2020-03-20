@@ -8,7 +8,6 @@ public class CommonData
     static public string IFFTComputeKernelName = "CSMain";
     static public string IFFTComputeInputBufferName = "InputTex";
     static public string IFFTComputeOutputBufferName = "OutputTex";
-    static public Vector3Int IFFTComputeThreadSize = new Vector3Int(1024, 1, 1);
     static public Vector2Int TexSize = new Vector2Int(1024, 1024);
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";
