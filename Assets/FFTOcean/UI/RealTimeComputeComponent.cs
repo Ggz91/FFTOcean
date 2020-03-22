@@ -78,7 +78,7 @@ public class RealTimeComputeComponent
         obj.GetComponent<FFTOceanMonoComponent>().InitData(init_param);
 
         //保存成配置
-        CommonUtil.SaveConfigAsset(init_param, UICommonData.IFFTOceanInitConfig);
+        CommonUtil.SaveAsset(init_param, UICommonData.IFFTOceanInitConfig);
     }
 
     void FillSpectrumData(ref FFTOceanMonoComponent.InitParam param)
@@ -88,11 +88,15 @@ public class RealTimeComputeComponent
         param.SpectrumParam.Amplitude = Amplitude;
         param.SpectrumParam.ComputeShader = SpectrumShader;
     }
+
     void FillIFFTData(ref FFTOceanMonoComponent.InitParam param)
     {
         param.IFFTParam.Size = Size;
         param.IFFTParam.ComputeShader = IFFTShader;
+        
+        param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
     }
+
     Mesh GenMeshImp()
     {
         Mesh mesh = new Mesh();

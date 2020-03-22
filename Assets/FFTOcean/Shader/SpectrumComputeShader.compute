@@ -17,8 +17,8 @@ float Amplitude;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     float2 cor;
-    cor.x = 2 * PI * (id.x - Size/2)/Size;
-    cor.y = 2 * PI * (id.y - Size/2)/Size;
+    cor.x = 2.0f * PI * (id.x - Size/2)/Size * 2;
+    cor.y = 2.0f * PI * (id.y - Size/2)/Size * 2;
     float2 wind_dir;
     wind_dir.x = WindDir[0];
     wind_dir.y = WindDir[1];
@@ -26,5 +26,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     rand_pair.x = RandomPair[0];
     rand_pair.y = RandomPair[1];
     float2 complex = CalPhillipsSpectrum(cor, Time, rand_pair, Amplitude, wind_dir, WindSpeed);
-    SpectrumTex[id.xy] = float4(complex.x, complex.x, complex.y, complex.y);
+    SpectrumTex[id.xy] = float4(complex.x, complex.y, complex.y, 1);
 }

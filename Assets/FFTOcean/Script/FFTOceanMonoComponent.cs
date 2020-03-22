@@ -23,8 +23,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
     #region  method
     void InitConfig()
     {
-        Object obj = CommonUtil.LoadConfigAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam));
-        InitParam param = CommonUtil.LoadConfigAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam)) as InitParam;
+        Object obj = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam));
+        InitParam param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam)) as InitParam;
         InitData(param);
     }
     void Start()
@@ -74,7 +74,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void GenSpectrum()
     {
         m_spectrum_util.Execute();
-        //CommonUtil.SaveRenderTexture(m_spectrum_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
+        CommonUtil.SaveRenderTextureToPNG(m_spectrum_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
 
         //Debug.Log("[SpectrumUtil] execute done. time : " + Time.time.ToString());
     }

@@ -13,7 +13,7 @@ float2 CalComplexConjugate(float2 plu)
 //计算向量的模
 float CalMagnitude(float2 vec)
 {
-    return sqrt(vec.x * vec.x + vec.y + vec.y);
+    return sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
 

@@ -6,7 +6,7 @@ using UnityEditor;
 
 public class CommonUtil
 {
-    static public void SaveRenderTexture(RenderTexture rt, string path)
+    static public void SaveRenderTextureToPNG(RenderTexture rt, string path)
     {
         RenderTexture cur_rt = RenderTexture.active;
         RenderTexture.active = rt;
@@ -27,13 +27,13 @@ public class CommonUtil
         RenderTexture.active = cur_rt;
     }
 
-    static public void SaveConfigAsset(in ScriptableObject asset, string path)
+    static public void SaveAsset(in Object asset, string path)
     {
         int index = path.LastIndexOf(@"/");
         string folder_path = path.Substring(0, index);
         if(!Directory.Exists(folder_path))
         {
-            Debug.Log("[SaveConfigAsset] folder_path : " + folder_path);
+            Debug.Log("[SaveAsset] folder_path : " + folder_path);
             Directory.CreateDirectory(folder_path);
         }
         AssetDatabase.CreateAsset(asset, path);
@@ -41,7 +41,7 @@ public class CommonUtil
         AssetDatabase.Refresh();
     }
 
-    static public Object LoadConfigAsset(string path, System.Type type)
+    static public Object LoadAsset(string path, System.Type type)
     {
         return AssetDatabase.LoadAssetAtPath(path, type);
     }
