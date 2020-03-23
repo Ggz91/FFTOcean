@@ -38,10 +38,12 @@ public class IFFTUtil
         InitComputeShaderData();
         OnInit();
     }
+
     public void SetHeightRenderTexture(RenderTexture rt)
     {
         m_ping_tex = rt;
     }
+    
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);

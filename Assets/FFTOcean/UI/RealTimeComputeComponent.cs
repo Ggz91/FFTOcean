@@ -11,7 +11,7 @@ public class RealTimeComputeComponent
     1、Mesh相关
     2、海洋参数设置")]
     [MinValue(1)]
-    public int Size = 256;
+    public int Resolution = 256;
     
     [BoxGroup("Mesh Param")]
     public Vector3 Position = Vector3.zero;
@@ -25,7 +25,7 @@ public class RealTimeComputeComponent
 
 
     [BoxGroup("Spectrum")]
-    public Vector2 Wind = new Vector2(1, 1);
+    public Vector2 Wind = new Vector2(16, 16);
 
     [BoxGroup("Spectrum")]
     public float Amplitude = 1;
@@ -83,7 +83,8 @@ public class RealTimeComputeComponent
 
     void FillSpectrumData(ref FFTOceanMonoComponent.InitParam param)
     {
-        param.SpectrumParam.Size = Size;
+        param.SpectrumParam.Resolution = Resolution;
+        param.SpectrumParam.Size = Resolution * UnitSize;
         param.SpectrumParam.Wind = Wind;
         param.SpectrumParam.Amplitude = Amplitude;
         param.SpectrumParam.ComputeShader = SpectrumShader;
@@ -91,7 +92,7 @@ public class RealTimeComputeComponent
 
     void FillIFFTData(ref FFTOceanMonoComponent.InitParam param)
     {
-        param.IFFTParam.Size = Size;
+        param.IFFTParam.Size = Resolution;
         param.IFFTParam.ComputeShader = IFFTShader;
         
         param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
@@ -106,27 +107,27 @@ public class RealTimeComputeComponent
         List<Vector2> uv = new List<Vector2>();
         List<int> indice = new List<int>();
         int index = -1;
-        for(int i = -Size/2; i <= Size/2; ++i)
+        for(int i = -Resolution/2; i <= Resolution/2; ++i)
         {
-            for(int j = -Size/2; j <= Size/2; ++j)
+            for(int j = -Resolution/2; j <= Resolution/2; ++j)
             {
                 index++;
                 //顶点位置
                 Vector3 offset = new Vector3(i * UnitSize, 0, j * UnitSize);
                 pos.Add(Position + offset);
                 normal.Add(new Vector3(0, 1, 0));
-                uv.Add(new Vector2(i * 1.0f/Size, j * 1.0f/Size));
+                uv.Add(new Vector2(i * 1.0f/Resolution, j * 1.0f/Resolution));
 
                 //三角形indice,逆时针
                 //最后一行和最后一列不生成
-                if(Size/2 == i || Size/2 == j)
+                if(Resolution/2 == i || Resolution/2 == j)
                 {
                     continue;
                 }
                 
                 int left_bottom = index;
                 int right_bottom = left_bottom + 1;
-                int left_top = index + Size + 1;
+                int left_top = index + Resolution + 1;
                 int right_top = left_top + 1;
                 /*Debug.Log("[GenMesh] vertex : " + left_bottom.ToString() + ", "
                 + right_bottom.ToString() + ","
@@ -146,7 +147,7 @@ public class RealTimeComputeComponent
         mesh.SetUVs(0, uv);
         mesh.SetNormals(normal.ToArray());
         mesh.SetIndices(indice.ToArray(), MeshTopology.Triangles, 0);
-        Debug.Log("[GenMesh] size : " + Size.ToString()
+        Debug.Log("[GenMesh] size : " + Resolution.ToString()
         + " vertices count : " + mesh.vertexCount.ToString());
         return mesh;
     }

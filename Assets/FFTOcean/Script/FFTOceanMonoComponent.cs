@@ -23,24 +23,27 @@ public class FFTOceanMonoComponent : MonoBehaviour
     #region  method
     void InitConfig()
     {
-        Object obj = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam));
         InitParam param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam)) as InitParam;
         InitData(param);
     }
+
     void Start()
     {
         InitConfig();
     }
+
     void InitSpectrum()
     {
         m_spectrum_util.InitData(InitParamData.SpectrumParam);
         Debug.Log("[SpectrumUtil] init done");
     }
+
     void InitIFFTUtil()
     {
         m_ifft_util.InitData(InitParamData.IFFTParam);
         Debug.Log("[IFFTUtil] init done");
     }
+
     public void InitData(InitParam initParam)
     {
         InitParamData = initParam;
@@ -48,6 +51,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
         InitSpectrum();
         InitIFFTUtil();
     }
+
     void Update()
     {
         //1、生成spectrum
@@ -65,12 +69,14 @@ public class FFTOceanMonoComponent : MonoBehaviour
         Material mat = GetComponent<MeshRenderer>().material;
         mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), m_ifft_util.ResTex);
     }
+
     void IFFTUpdate()
     {
         //更新高度图
         m_ifft_util.SetHeightRenderTexture(m_spectrum_util.ResTex);
         m_ifft_util.Update();
     }
+    
     void GenSpectrum()
     {
         m_spectrum_util.Execute();

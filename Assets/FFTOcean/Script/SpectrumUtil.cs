@@ -8,10 +8,11 @@ public class SpectrumUtil
     [System.Serializable]
     public struct InitParam
     {
-        public int Size;
+        public int Resolution;
         public ComputeShader ComputeShader;
         public Vector2 Wind;
         public float Amplitude;
+        public float Size;
     }
     public RenderTexture ResTex
     {
@@ -35,11 +36,12 @@ public class SpectrumUtil
     void InitComputeShaderStaticData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.SpectrumComputeKernelName);
-        m_param.ComputeShader.SetInt(CommonData.SpectrumComputeSizeName, m_param.Size);
+        m_param.ComputeShader.SetInt(CommonData.SpectrumComputeResoName, m_param.Resolution);
+        m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeSizeName, m_param.Size);
         Vector2 wind_dir = m_param.Wind.normalized;
         float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
         float wind_speed = m_param.Wind.magnitude;
-        m_spectrum_tex = new RenderTexture(m_param.Size, m_param.Size,32);
+        m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution,32);
         m_spectrum_tex.enableRandomWrite = true;
         m_spectrum_tex.Create();
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
@@ -52,6 +54,7 @@ public class SpectrumUtil
     {
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeTimeName, Time.time * 1000);
         Vector2 rand_pair = MathUtil.CalGaussianRandomVariablePair();
+        //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
         float[] rand_pair_arr = {rand_pair.x, rand_pair.y};
         m_param.ComputeShader.SetFloats(CommonData.SpectrumComputeRandPairName, rand_pair_arr);
     }
@@ -59,7 +62,7 @@ public class SpectrumUtil
     public void Execute()
     {
         UpdateComputeShaderDynamicData();
-        m_param.ComputeShader.Dispatch(m_kernel, m_param.Size/8, m_param.Size/8, 1);
+        m_param.ComputeShader.Dispatch(m_kernel, m_param.Resolution/8, m_param.Resolution/8, 1);
     }
 
     public void Leave()
