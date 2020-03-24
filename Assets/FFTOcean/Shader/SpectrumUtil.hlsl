@@ -14,7 +14,7 @@
 float CalPhillipsModule(float2 cor, float a, float2 w, float v)
 {
     float s = v * v / G;
-    float abs_dot = abs(cor * w);
+    float abs_dot = abs(cor.x * w.x + cor.y * w.y);
     float k_mag = CalMagnitude(cor);
     float k_square = k_mag * k_mag;
     float k_forth_power = k_square * k_square;
