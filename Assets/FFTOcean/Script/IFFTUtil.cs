@@ -39,7 +39,7 @@ public class IFFTUtil
         OnInit();
     }
 
-    public void SetHeightRenderTexture(RenderTexture rt)
+    public void SetInputRenderTexture(RenderTexture rt)
     {
         m_ping_tex = rt;
     }
@@ -102,7 +102,7 @@ public class IFFTUtil
         Done = true;
     }
 
-    void InitTex(RenderTexture rt)
+    void InitTex(ref RenderTexture rt)
     {
         if(null == rt || rt.width != m_param.Size || rt.height != m_param.Size)
         {
@@ -111,14 +111,16 @@ public class IFFTUtil
                 RenderTexture.DestroyImmediate(rt);
             }
             rt = new RenderTexture(m_param.Size, m_param.Size, 32);
+            rt.enableRandomWrite = true;
+            rt.Create();
         }
     }
 
     void OnInit()
     {
-        m_stage_count = (int)(Mathf.Log(2, m_param.Size));
+        m_stage_count = (int)(Mathf.Log(m_param.Size, 2));
         //InitTex(m_ping_tex);
-        InitTex(m_pong_tex);
+        InitTex(ref m_pong_tex);
     }
 
     public void Leave()
