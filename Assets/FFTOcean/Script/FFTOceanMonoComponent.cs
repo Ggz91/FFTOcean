@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FFTOceanMonoComponent : MonoBehaviour
 {
@@ -67,7 +68,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void UpdateMatHeightMap()
     {
         Material mat = GetComponent<MeshRenderer>().material;
-        CommonUtil.SaveRenderTextureToPNG(m_ifft_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
+        //CommonUtil.SaveRenderTextureToPNG(m_ifft_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), m_ifft_util.ResTex);
     }
 
@@ -77,12 +78,10 @@ public class FFTOceanMonoComponent : MonoBehaviour
         m_ifft_util.SetInputRenderTexture(m_spectrum_util.ResTex);
         m_ifft_util.Update();
     }
-    
+
     void GenSpectrum()
     {
         m_spectrum_util.Execute();
-        //CommonUtil.SaveRenderTextureToPNG(m_spectrum_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
-
         //Debug.Log("[SpectrumUtil] execute done. time : " + Time.time.ToString());
     }
 
@@ -93,5 +92,6 @@ public class FFTOceanMonoComponent : MonoBehaviour
         m_ifft_util.Leave();
         m_ifft_util = null;
     }
+
     #endregion
 }

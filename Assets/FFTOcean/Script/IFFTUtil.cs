@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 public class IFFTUtil
 {
     #region var
@@ -41,13 +43,21 @@ public class IFFTUtil
 
     public void SetInputRenderTexture(RenderTexture rt)
     {
-        m_ping_tex = rt;
+        RenderTexture clone_rt = new RenderTexture(rt);
+        m_ping_tex = clone_rt;
     }
-    
+    public void UpdateUI()
+    {
+        GameObject canvas = GameObject.Find("Canvas");
+        GameObject spectrum_image = canvas?.transform.GetChild(1).gameObject;
+        RawImage m_raw_image = spectrum_image?.GetComponent<RawImage>();
+        m_raw_image.texture = ResTex;
+    }
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
+        m_param.BufferFlyLutTex.enableRandomWrite = true;
         if(null != m_param.BufferFlyLutTex)
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
@@ -100,6 +110,7 @@ public class IFFTUtil
     void OnDone()
     {
         Done = true;
+        UpdateUI();
     }
 
     void InitTex(ref RenderTexture rt)

@@ -6,8 +6,17 @@ using UnityEditor;
 
 public class CommonUtil
 {
+    static float m_last_time;
     static public void SaveRenderTextureToPNG(RenderTexture rt, string path)
     {
+        //io限制
+        float delta_time = Time.time - m_last_time;
+        if(delta_time < 0.01f)
+        {
+            //return;
+        }
+        m_last_time = Time.time;
+        
         RenderTexture cur_rt = RenderTexture.active;
         RenderTexture.active = rt;
         Texture2D tex = new Texture2D(rt.width, rt.height);
@@ -18,7 +27,7 @@ public class CommonUtil
         {
             Directory.CreateDirectory(folder_path);
         }
-        FileStream stream = File.Open(path, FileMode.Create);
+        FileStream stream = File.Open(path, FileMode.OpenOrCreate);
         BinaryWriter writer = new BinaryWriter(stream);
         writer.Write(pixels);
         stream.Close();
@@ -36,6 +45,7 @@ public class CommonUtil
             Debug.Log("[SaveAsset] folder_path : " + folder_path);
             Directory.CreateDirectory(folder_path);
         }
+       
         AssetDatabase.CreateAsset(asset, path);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();

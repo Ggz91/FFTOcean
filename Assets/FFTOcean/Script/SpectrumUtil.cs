@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SpectrumUtil
 {
@@ -24,13 +25,28 @@ public class SpectrumUtil
     InitParam m_param;
     int m_kernel;
     RenderTexture m_spectrum_tex;
+    ComputeBuffer m_wind_dir_buff = null;
+    ComputeBuffer m_rand_pair_buff = null;
+    RawImage m_raw_image;
     #endregion
 
     #region  method
+    void InitUI()
+    {
+        GameObject canvas = GameObject.Find("Canvas");
+        GameObject spectrum_image = canvas?.transform.GetChild(0).gameObject;
+        m_raw_image = spectrum_image?.GetComponent<RawImage>();
+        m_raw_image.texture = m_spectrum_tex;
+    }
+    public void UpdateUI()
+    {
+        m_raw_image.texture = m_spectrum_tex;
+    }
     public void InitData(InitParam param)
     {
         m_param = param;
         InitComputeShaderStaticData();
+        InitUI();
     }
 
     void InitComputeShaderStaticData()
@@ -42,14 +58,24 @@ public class SpectrumUtil
         float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
         float wind_speed = m_param.Wind.magnitude;
         m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution,32);
+        m_spectrum_tex.format = RenderTextureFormat.ARGBFloat;
         m_spectrum_tex.enableRandomWrite = true;
         m_spectrum_tex.Create();
+        m_spectrum_tex.name = "SpectrumTex";
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
-        ComputeBuffer wind_dir_buff = new ComputeBuffer(2,4);
-        wind_dir_buff.SetData(wind_dir_arr);
-        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeWindDirName, wind_dir_buff);
+        if(null == m_wind_dir_buff)
+        {
+            m_wind_dir_buff = new ComputeBuffer(2,4);
+        }
+        m_wind_dir_buff.SetData(wind_dir_arr);
+        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeWindDirName, m_wind_dir_buff);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeWindSpeedName, wind_speed);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeAmplitudeName, m_param.Amplitude);
+
+        if(null == m_rand_pair_buff)
+        {
+            m_rand_pair_buff = new ComputeBuffer(2, 4);
+        }
     }
     
     void UpdateComputeShaderDynamicData()
@@ -58,9 +84,8 @@ public class SpectrumUtil
         Vector2 rand_pair = MathUtil.CalGaussianRandomVariablePair();
         //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
         float[] rand_pair_arr =  {rand_pair.x, rand_pair.y};
-        ComputeBuffer rand_pair_buff = new ComputeBuffer(2, 4);
-        rand_pair_buff.SetData(rand_pair_arr);
-        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, rand_pair_buff);
+        m_rand_pair_buff.SetData(rand_pair_arr);
+        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, m_rand_pair_buff);
     }
 
     public void Execute()
@@ -72,6 +97,10 @@ public class SpectrumUtil
     public void Leave()
     {
         RenderTexture.DestroyImmediate(m_spectrum_tex);
+        m_rand_pair_buff.Release();
+        m_rand_pair_buff = null;
+        m_wind_dir_buff.Release();
+        m_wind_dir_buff = null;
     }
     #endregion
 }
