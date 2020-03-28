@@ -41,10 +41,22 @@ public class IFFTUtil
         OnInit();
     }
 
+    void CloneRenderTexture(RenderTexture source, ref RenderTexture dest)
+    {
+        dest = new RenderTexture(m_param.Size, m_param.Size, 32);
+        dest.format = source.format;
+        Graphics.CopyTexture(source, dest);
+    }
+
     public void SetInputRenderTexture(RenderTexture rt)
     {
-        RenderTexture clone_rt = new RenderTexture(rt);
-        m_ping_tex = clone_rt;
+        
+    #if _DEBUG_
+        CloneRenderTexture(rt,ref m_ping_tex);
+    #else
+        m_ping_tex = rt;
+    #endif
+        m_ping_tex.name = "IFFTHeight";
     }
     public void UpdateUI()
     {
@@ -71,6 +83,9 @@ public class IFFTUtil
 
     public void Update()
     {
+        ResTex = m_ping_tex;
+        OnDone();
+        return;
         int i = 0;
         //计算行
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 1);
