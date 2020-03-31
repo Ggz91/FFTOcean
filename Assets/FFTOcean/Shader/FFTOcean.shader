@@ -37,10 +37,10 @@
             v2f vert (appdata v)
             {
                 v2f o;
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv = v.uv;
                 float height = tex2Dlod(_OceanHeightMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
                 float4 real_pos = v.vertex;
-                real_pos.z += height;
+                real_pos.y += height;
                 o.vertex = UnityObjectToClipPos(real_pos);
                 return o;
             }

@@ -39,7 +39,8 @@ public class PreComputeWIndowComponent
         FillLutInitParam(out param);
         m_lut_util.Init(param);
         RenderTexture rt = m_lut_util.Execute();
-        CommonUtil.SaveRenderTextureToPNG(rt, UICommonData.IFFTOceanLutPNGPath);
+        //CommonUtil.SaveRenderTextureToPNG(rt, UICommonData.IFFTOceanLutPNGPath);
+        RenderTexture.active = null;
         CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
         m_lut_util.Leave();
         Debug.Log("=============[GenLut] Leave==============");

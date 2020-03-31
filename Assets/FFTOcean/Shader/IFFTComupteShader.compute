@@ -9,32 +9,35 @@ RWTexture2D<float4> InputTex;
 RWTexture2D<float4> OutputTex;
 RWTexture2D<float4> LutTex;
 int Stage;
-int GroupSize;
-int Size;
+uint GroupSize;
+uint Size;
 int ComputeLine;
 
 float CalSymbol(uint2 id)
 {
-    return pow(-1, id.x - Size/2 + id.y);
+    int exp = id.x * 1.0f + id.y * 1.0f - Size / 2;
+    return (exp % 2 != 0) ? -1 : 1;
+    //pow 不支持底为-1
+    //return pow(-1, id.x * 1.0f - Size * 0.5f + id.y * 1.0f);
 }
 
 [numthreads(8, 8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    uint2 cor = id;
+    uint2 cor = id.xy;
     cor.x = ComputeLine == 1 ? id.x : id.y;
     cor.y = Stage;
     float4 weight = LutTex[cor];
-    int reverse = (id.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
+    int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
     uint2 pat_cor;
     pat_cor.x = ComputeLine == 1 ? CalBitReverse(id.x) : id.x;
     pat_cor.y = ComputeLine == 1 ? id.y: CalBitReverse(id.y);
-    float4 self_input = InputTex[cor];
+    float4 self_input = InputTex[id.xy];
     float4 pat_input = InputTex[pat_cor];
     //符号校正
     if(0 == ComputeLine && 0 == Stage)
     {
-        self_input *= CalSymbol(cor);
+        self_input *= CalSymbol(id.xy);
         pat_input *= CalSymbol(pat_cor);
     }
     float real = reverse * weight.x * pat_input.x + self_input.x;
@@ -42,4 +45,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float mul_real = cos((2 * PI * id.x * id.x) / Size);
     float mul_ima = sin((2 * PI * id.x * id.x) / Size);
     OutputTex[id.xy] = float4(real * mul_real - ima * mul_ima,0, ima * mul_real + real * mul_ima, 1);
+    
 }

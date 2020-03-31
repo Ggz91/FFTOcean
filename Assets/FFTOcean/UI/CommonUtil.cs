@@ -45,10 +45,7 @@ public class CommonUtil
             Debug.Log("[SaveAsset] folder_path : " + folder_path);
             Directory.CreateDirectory(folder_path);
         }
-       
         AssetDatabase.CreateAsset(asset, path);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
     }
 
     static public Object LoadAsset(string path, System.Type type)

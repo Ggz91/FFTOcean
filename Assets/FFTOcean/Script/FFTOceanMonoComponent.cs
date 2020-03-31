@@ -57,7 +57,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     {
         //1、生成spectrum
         GenSpectrum();
-        
+
         //2、根据specturm生成高度图
         IFFTUpdate();
 

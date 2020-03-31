@@ -43,8 +43,11 @@ public class IFFTUtil
 
     void CloneRenderTexture(RenderTexture source, ref RenderTexture dest)
     {
-        dest = new RenderTexture(m_param.Size, m_param.Size, 32);
-        dest.format = source.format;
+        if(null == dest)
+        {
+           InitTex(ref dest);
+        }
+        
         Graphics.CopyTexture(source, dest);
     }
 
@@ -69,7 +72,6 @@ public class IFFTUtil
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
-        m_param.BufferFlyLutTex.enableRandomWrite = true;
         if(null != m_param.BufferFlyLutTex)
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
@@ -80,12 +82,8 @@ public class IFFTUtil
     {
         Done = false;
     }
-
     public void Update()
     {
-        ResTex = m_ping_tex;
-        OnDone();
-        return;
         int i = 0;
         //计算行
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 1);
@@ -93,31 +91,43 @@ public class IFFTUtil
         {
             CalStageOutput(i);
         }
+
+        //重新对齐一下输入
+        bool even = (i-1) % 2 != 0;
+
         //计算列
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 0);
         for(i = 0; i<m_stage_count; ++i)
         {
-            CalStageOutput(i);
+            CalStageOutput(i, even);
         }
-        ResTex = (i-1) % 2 != 0 ? m_ping_tex : m_pong_tex;
-        OnDone();
-    }
-
-    void CalStageOutput(int stage)
-    {
-        bool even = stage % 2 != 0;
-        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, (int)stage);
-        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, (int)Mathf.Exp(stage+1));
-        //设置ping pong坐标翻转操作
-        if(!even)
+        if((i-1)%2 != 0)
         {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, m_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, m_pong_tex);
+            ResTex = even ? m_pong_tex : m_ping_tex;
         }
         else
         {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, m_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, m_ping_tex);
+            ResTex = even ? m_ping_tex : m_pong_tex;
+        }
+        OnDone();
+    }
+
+    void CalStageOutput(int stage, bool reverse = false)
+    {
+        bool even = stage % 2 != 0;
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, (int)stage);
+        int GroupSize = (int)Mathf.Pow(2, stage+1);
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
+        //设置ping pong坐标翻转操作
+        if(!even)
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, reverse ? m_pong_tex : m_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, reverse ? m_ping_tex : m_pong_tex);
+        }
+        else
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, reverse ? m_ping_tex : m_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, reverse ? m_pong_tex : m_ping_tex);
         }
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
@@ -138,6 +148,8 @@ public class IFFTUtil
             }
             rt = new RenderTexture(m_param.Size, m_param.Size, 32);
             rt.enableRandomWrite = true;
+            rt.format = RenderTextureFormat.ARGBFloat;
+            rt.wrapMode = TextureWrapMode.Repeat;
             rt.Create();
         }
     }

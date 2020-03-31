@@ -104,7 +104,7 @@ public class RealTimeComputeComponent
         mesh.name = @"FFTOceanMesh";
         List<Vector3> pos = new List<Vector3>();
         List<Vector3> normal = new List<Vector3>();
-        List<Vector2> uv = new List<Vector2>();
+        List<Vector2> uvs = new List<Vector2>();
         List<int> indice = new List<int>();
         int index = -1;
         for(int i = -Resolution/2; i <= Resolution/2; ++i)
@@ -116,8 +116,12 @@ public class RealTimeComputeComponent
                 Vector3 offset = new Vector3(i * UnitSize, 0, j * UnitSize);
                 pos.Add(Position + offset);
                 normal.Add(new Vector3(0, 1, 0));
-                uv.Add(new Vector2(i * 1.0f/Resolution, j * 1.0f/Resolution));
-
+                Vector2 uv = new Vector2((i + Resolution / 2 ) * 1.0f/(Resolution-1), (j + Resolution / 2 ) * 1.0f/(Resolution-1));
+                uv.x = uv.x > 1 ? (uv.x - 1) : uv.x;
+                uv.y = uv.y > 1 ? (uv.y - 1) : uv.y;
+                uvs.Add(uv);
+                /*Debug.Log("[GenMesh] pos : " + offset.ToString()
+                + " uv : " + uv.ToString());*/
                 //三角形indice,逆时针
                 //最后一行和最后一列不生成
                 if(Resolution/2 == i || Resolution/2 == j)
@@ -144,11 +148,12 @@ public class RealTimeComputeComponent
         }
 
         mesh.SetVertices(pos.ToArray());
-        mesh.SetUVs(0, uv);
+        mesh.SetUVs(0, uvs);
         mesh.SetNormals(normal.ToArray());
         mesh.SetIndices(indice.ToArray(), MeshTopology.Triangles, 0);
         Debug.Log("[GenMesh] size : " + Resolution.ToString()
         + " vertices count : " + mesh.vertexCount.ToString());
+        mesh.RecalculateBounds();
         return mesh;
     }
 
