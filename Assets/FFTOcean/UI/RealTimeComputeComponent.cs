@@ -117,8 +117,6 @@ public class RealTimeComputeComponent
                 pos.Add(Position + offset);
                 normal.Add(new Vector3(0, 1, 0));
                 Vector2 uv = new Vector2((i + Resolution / 2 ) * 1.0f/(Resolution-1), (j + Resolution / 2 ) * 1.0f/(Resolution-1));
-                uv.x = uv.x > 1 ? (uv.x - 1) : uv.x;
-                uv.y = uv.y > 1 ? (uv.y - 1) : uv.y;
                 uvs.Add(uv);
                 /*Debug.Log("[GenMesh] pos : " + offset.ToString()
                 + " uv : " + uv.ToString());*/

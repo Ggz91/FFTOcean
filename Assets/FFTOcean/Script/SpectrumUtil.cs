@@ -60,6 +60,7 @@ public class SpectrumUtil
         m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution,32);
         m_spectrum_tex.format = RenderTextureFormat.ARGBFloat;
         m_spectrum_tex.enableRandomWrite = true;
+        m_spectrum_tex.wrapMode = TextureWrapMode.Repeat;
         m_spectrum_tex.Create();
         m_spectrum_tex.name = "SpectrumTex";
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
@@ -76,16 +77,22 @@ public class SpectrumUtil
         {
             m_rand_pair_buff = new ComputeBuffer(2, 4);
         }
-    }
-    
-    void UpdateComputeShaderDynamicData()
-    {
-        m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeTimeName, Time.time * 1000);
+
         Vector2 rand_pair = MathUtil.CalGaussianRandomVariablePair();
         //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
         float[] rand_pair_arr =  {rand_pair.x, rand_pair.y};
         m_rand_pair_buff.SetData(rand_pair_arr);
         m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, m_rand_pair_buff);
+    }
+    
+    void UpdateComputeShaderDynamicData()
+    {
+        m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeTimeName, Time.time);
+        /*Vector2 rand_pair = MathUtil.CalGaussianRandomVariablePair();
+        //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
+        float[] rand_pair_arr =  {rand_pair.x, rand_pair.y};
+        m_rand_pair_buff.SetData(rand_pair_arr);
+        m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, m_rand_pair_buff);*/
     }
 
     public void Execute()
