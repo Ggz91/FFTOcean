@@ -24,27 +24,35 @@ float2 TransferEulerIndentityToComplexConjugate(float exp)
 }
 
 //bitreverse计算蝶形lut的另一个index
-uint CalBitReverse(uint inter)
+uint CalBitReverse(uint inter, uint length)
 {
     //最多到1024
-    int list[10];
-    int i=0;
-    for(;; ++i)
+    uint list[10];
+    uint i=0;
+    for(; i < length; ++i)
     {
-        if(inter == 0 )
-        {
-            break;
-        }
         uint cur = inter & 0x01;
         list[i] = cur;
         inter = inter >> 1;
     }
     
     uint res = 0;
-    for(int j = 0; j<i; ++j)
+    for(uint j = 0; j<i; ++j)
     {
         res += list[j];
-        res >> 1; 
+        if((i-1) == j)
+        {
+            break;
+        }
+        res = res << 1; 
     }
     return res;
+}
+
+//复数相乘
+float2 MulComplex(float2 l, float2 r)
+{
+    float real = l.x * r.x - l.y * r.y;
+    float ima = l.x * r.y + l.y * r.x;
+    return float2(real, ima);    
 }

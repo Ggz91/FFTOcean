@@ -23,9 +23,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float2 wind_dir;
     wind_dir.x = WindDir[0];
     wind_dir.y = WindDir[1];
-    float2 rand_pair;
-    rand_pair.x = RandomPair[0];
-    rand_pair.y = RandomPair[1];
-    float2 complex = CalPhillipsSpectrum(cor, Time, rand_pair, Amplitude, wind_dir, WindSpeed);
-    SpectrumTex[id.xy] = float4(complex.x/2, 0, complex.y/2, 1);
+    float2 rand_pair0;
+    rand_pair0.x = RandomPair[0];
+    rand_pair0.y = RandomPair[1];
+    float2 rand_pair1;
+    rand_pair1.x = RandomPair[2];
+    rand_pair1.y = RandomPair[3];
+    float2 complex = CalPhillipsSpectrum(cor, Time, rand_pair0, rand_pair1, Amplitude, wind_dir, WindSpeed);
+    //float neg = id.x % 2 == 0 ? 1 : -1;
+    SpectrumTex[id.xy] = float4(complex.x, 0, complex.y, 1);
 }

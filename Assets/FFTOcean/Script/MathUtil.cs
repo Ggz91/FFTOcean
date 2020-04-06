@@ -19,29 +19,29 @@ class MathUtil
 		return new Vector2(x1 * w, x2 * w);
 	}
 
-	uint CalBitReverse(uint inter, int stage_count)
+	public static uint CalBitReverse(uint inter, uint length)
 	{
-		List<uint> list = new List<uint>();
-		for(int i = 0 ; i < stage_count; ++i)
+		//最多到1024
+		uint[] list = new uint[10];
+		uint i=0;
+		for(; i < length; ++i)
 		{
-			if(inter == 0 )
+			uint cur = inter & 0x01;
+			list[i] = cur;
+			inter = inter >> 1;
+		}
+		
+		uint res = 0;
+		for(uint j = 0; j<i; ++j)
+		{
+			res += list[j];
+			if((i-1) == j)
 			{
 				break;
 			}
-			uint cur = inter & 0x01;
-			list.Add(cur);
-			inter = inter >> 1;
-		}
-		list.Reverse();
-		var re_itr = list.GetEnumerator();
-		uint res = 0;
-		while(re_itr.MoveNext())
-		{
-			res = res << 1;
-			res += re_itr.Current;
+			res = res << 1; 
 		}
 		return res;
 	}
 }
 
-//bitreverse算法

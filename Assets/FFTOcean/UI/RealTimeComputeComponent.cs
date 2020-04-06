@@ -11,7 +11,7 @@ public class RealTimeComputeComponent
     1、Mesh相关
     2、海洋参数设置")]
     [MinValue(1)]
-    public int Resolution = 256;
+    public int Resolution = 64;
     
     [BoxGroup("Mesh Param")]
     public Vector3 Position = Vector3.zero;
@@ -25,10 +25,10 @@ public class RealTimeComputeComponent
 
 
     [BoxGroup("Spectrum")]
-    public Vector2 Wind = new Vector2(16, 16);
+    public Vector2 Wind = new Vector2(16, 0);
 
     [BoxGroup("Spectrum")]
-    public float Amplitude = 1;
+    public float Amplitude = 0.2f;
 
     [BoxGroup("IFFT")]
     public ComputeShader IFFTShader;

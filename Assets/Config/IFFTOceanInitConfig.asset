@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: IFFTOceanInitConfig
   m_EditorClassIdentifier: Assembly-CSharp::FFTOceanMonoComponent/InitParam
   SpectrumParam:
-    Resolution: 64
+    Resolution: 256
     ComputeShader: {fileID: 7200000, guid: a89d54e0b44bfa645a93d0f63801a3a6, type: 3}
-    Wind: {x: 16, y: 16}
-    Amplitude: 1
-    Size: 32
+    Wind: {x: 16, y: 0}
+    Amplitude: 0.2
+    Size: 128
   IFFTParam:
     ComputeShader: {fileID: 7200000, guid: 302b0b700232f334eb711ba697a93e2d, type: 3}
-    Size: 64
+    Size: 256
     BufferFlyLutTex: {fileID: 8400000, guid: 3183ac621a80a734b98d482bb8042b32, type: 2}

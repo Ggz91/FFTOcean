@@ -15,7 +15,7 @@ public class PreComputeWIndowComponent
     void FillLutInitParam(out LutUtil.InitParam param)
     {
         param = new LutUtil.InitParam();
-        param.Size = Size.x;
+        param.Size = Size;
         param.ComputeShader = LutComputeShader;
         Debug.Log("[GenLutTex] fill init param");
     }
@@ -26,7 +26,7 @@ public class PreComputeWIndowComponent
     1. 蝶形lut")]
     [BoxGroup("蝶形lut")]
     [MinValue(1)]
-    public Vector2Int Size = new Vector2Int(256, 256);
+    public int Size = 64;
 
     [BoxGroup("蝶形lut")]
     public ComputeShader LutComputeShader;

@@ -8,16 +8,18 @@
 RWTexture2D<float4> InputTex;
 RWTexture2D<float4> OutputTex;
 RWTexture2D<float4> LutTex;
-int Stage;
+
 uint GroupSize;
+uint Stage;
+uint TotalStageCount;
 uint Size;
 int ComputeLine;
 
 float CalSymbol(uint2 id)
 {
-    int exp = id.x * 1.0f + id.y * 1.0f - Size / 2;
+    int exp = id.x + id.y - Size / 2;
     return (exp % 2 != 0) ? -1 : 1;
-    //pow 不支持底为-1
+    //pow 不支持底为复数
     //return pow(-1, id.x * 1.0f - Size * 0.5f + id.y * 1.0f);
 }
 
@@ -25,25 +27,54 @@ float CalSymbol(uint2 id)
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     uint2 cor = id.xy;
-    cor.x = ComputeLine == 1 ? id.x : id.y;
     cor.y = Stage;
+    uint2 pat_cor;
+    if(1 == ComputeLine)
+    {
+        cor.x = id.x;
+        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
+        pat_cor.y = id.y;
+    }
+    else
+    {
+        cor.x = id.y;
+        pat_cor.x = id.x;
+        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y, TotalStageCount) : id.y;
+    }
     float4 weight = LutTex[cor];
     int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
-    uint2 pat_cor;
-    pat_cor.x = ComputeLine == 1 ? CalBitReverse(id.x) : id.x;
-    pat_cor.y = ComputeLine == 1 ? id.y: CalBitReverse(id.y);
     float4 self_input = InputTex[id.xy];
     float4 pat_input = InputTex[pat_cor];
     //符号校正
-    if(0 == ComputeLine && 0 == Stage)
+    if(1 == ComputeLine && 0 == Stage)
     {
-        self_input *= CalSymbol(id.xy);
+        float neg = cor.x % 2 == 0 ? 1 : -1;
+        self_input *= neg;
+        neg = pat_cor.x % 2 == 0 ? 1 : - 1;
+        pat_input *= neg;
+    }
+    else if(0 == ComputeLine && 0 == Stage)
+    {
+        self_input *= CalSymbol(cor.xy);
         pat_input *= CalSymbol(pat_cor);
     }
-    float real = reverse * weight.x * pat_input.x + self_input.x;
-    float ima = reverse * weight.z * pat_input.z + self_input.z;
-    float mul_real = cos((2 * PI * id.x * id.x) / Size);
-    float mul_ima = sin((2 * PI * id.x * id.x) / Size);
-    OutputTex[id.xy] = float4(real * mul_real - ima * mul_ima,0, ima * mul_real + real * mul_ima, 1);
+    float2 weight_com = float2(weight.x, weight.z);
+    float2 pat_com = float2(pat_input.x, pat_input.z);
+    float2 self_com = float2(self_input.x, self_input.z);
+    
+    if(1 == reverse)
+    {
+        float2 weight_pat_mul_com = MulComplex(weight_com, pat_com);
+        float real = weight_pat_mul_com.x + self_input.x;
+        float ima = weight_pat_mul_com.y + self_input.z;
+        OutputTex[id.xy] = float4(real ,0, ima, 1);
+    }
+    else
+    {
+        float2 weight_pat_mul_com = MulComplex(weight_com, self_com);
+        float real = -1 * weight_pat_mul_com.x + pat_input.x;
+        float ima = -1 * weight_pat_mul_com.y + pat_input.z;
+        OutputTex[id.xy] = float4(real ,0, ima, 1);
+    }
     
 }

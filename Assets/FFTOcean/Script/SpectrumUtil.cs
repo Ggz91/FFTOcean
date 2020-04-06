@@ -36,10 +36,8 @@ public class SpectrumUtil
         GameObject canvas = GameObject.Find("Canvas");
         GameObject spectrum_image = canvas?.transform.GetChild(0).gameObject;
         m_raw_image = spectrum_image?.GetComponent<RawImage>();
-        m_raw_image.texture = m_spectrum_tex;
-    }
-    public void UpdateUI()
-    {
+        /*float scale = m_param.Size / 100;
+        m_raw_image.rectTransform.localScale = new Vector3(scale, scale, scale);*/
         m_raw_image.texture = m_spectrum_tex;
     }
     public void InitData(InitParam param)
@@ -61,6 +59,7 @@ public class SpectrumUtil
         m_spectrum_tex.format = RenderTextureFormat.ARGBFloat;
         m_spectrum_tex.enableRandomWrite = true;
         m_spectrum_tex.wrapMode = TextureWrapMode.Repeat;
+        m_spectrum_tex.filterMode = FilterMode.Point;
         m_spectrum_tex.Create();
         m_spectrum_tex.name = "SpectrumTex";
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
@@ -75,12 +74,13 @@ public class SpectrumUtil
 
         if(null == m_rand_pair_buff)
         {
-            m_rand_pair_buff = new ComputeBuffer(2, 4);
+            m_rand_pair_buff = new ComputeBuffer(4, 4);
         }
 
-        Vector2 rand_pair = MathUtil.CalGaussianRandomVariablePair();
+        Vector2 rand_pair0 = MathUtil.CalGaussianRandomVariablePair();
+        Vector2 rand_pair1 = MathUtil.CalGaussianRandomVariablePair();
         //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
-        float[] rand_pair_arr =  {rand_pair.x, rand_pair.y};
+        float[] rand_pair_arr =  {rand_pair0.x, rand_pair0.y, rand_pair1.x, rand_pair1.y};
         m_rand_pair_buff.SetData(rand_pair_arr);
         m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, m_rand_pair_buff);
     }

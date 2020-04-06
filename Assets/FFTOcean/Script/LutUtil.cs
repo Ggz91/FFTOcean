@@ -38,6 +38,7 @@ public class LutUtil
         m_lut_rt = new RenderTexture(m_size[0], m_size[1], 32);
         m_lut_rt.enableRandomWrite = true;
         m_lut_rt.format = RenderTextureFormat.ARGBFloat;
+        m_lut_rt.filterMode = FilterMode.Point;
         m_lut_rt.Create();
         Debug.Log("[LutUtil] size : (" + m_size[0].ToString() + ", " + m_size[1].ToString() + ")");
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.LutComputeBufferName, m_lut_rt);

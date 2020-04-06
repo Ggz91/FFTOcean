@@ -66,6 +66,8 @@ public class IFFTUtil
         GameObject canvas = GameObject.Find("Canvas");
         GameObject spectrum_image = canvas?.transform.GetChild(1).gameObject;
         RawImage m_raw_image = spectrum_image?.GetComponent<RawImage>();
+        /*float scale = m_param.Size * 1.0f / 100;
+        m_raw_image.rectTransform.localScale = new Vector3(scale, scale, scale);*/
         m_raw_image.texture = ResTex;
     }
     void InitComputeShaderData()
@@ -91,10 +93,8 @@ public class IFFTUtil
         {
             CalStageOutput(i);
         }
-
         //重新对齐一下输入
         bool even = (i-1) % 2 != 0;
-
         //计算列
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 0);
         for(i = 0; i<m_stage_count; ++i)
@@ -115,7 +115,7 @@ public class IFFTUtil
     void CalStageOutput(int stage, bool reverse = false)
     {
         bool even = stage % 2 != 0;
-        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, (int)stage);
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, stage);
         int GroupSize = (int)Mathf.Pow(2, stage+1);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
         //设置ping pong坐标翻转操作
@@ -150,6 +150,7 @@ public class IFFTUtil
             rt.enableRandomWrite = true;
             rt.format = RenderTextureFormat.ARGBFloat;
             rt.wrapMode = TextureWrapMode.Repeat;
+            rt.filterMode = FilterMode.Point;
             rt.Create();
         }
     }
@@ -157,6 +158,8 @@ public class IFFTUtil
     void OnInit()
     {
         m_stage_count = (int)(Mathf.Log(m_param.Size, 2));
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeTotalStageCountName, m_stage_count);
+
         //InitTex(m_ping_tex);
         InitTex(ref m_pong_tex);
     }

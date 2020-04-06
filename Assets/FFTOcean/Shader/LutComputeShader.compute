@@ -1,5 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#include "MathUtil.hlsl"
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -13,9 +14,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int half_group_size = pow(2, id.y);
     int index = id.x % group_size;
     index = (index >= half_group_size) ? (index - half_group_size) : index;
-    float exponent = 2 * 3.1415926 * index / group_size;
+    float exponent = 2 * PI * index / group_size;
     //欧拉恒等式
-    float real = cos(exponent);
-    float ima = sin(exponent);
-    LutTex[id.xy] = float4(real, 0, ima, 1);
+    float2 com = TransferEulerIndentityToComplexConjugate(exponent);
+    LutTex[id.xy] = float4(com.x, 0, com.y, 1);
 }
