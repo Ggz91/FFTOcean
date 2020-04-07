@@ -69,7 +69,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
     {
         Material mat = GetComponent<MeshRenderer>().material;
         //CommonUtil.SaveRenderTextureToPNG(m_ifft_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
-        mat?.SetTexture(Shader.PropertyToID(CommonData.OCeanMatHeightTexName), m_ifft_util.ResTex);
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatHeightTexName), m_ifft_util.ResHeightTex);
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatDisplaceTexName), m_ifft_util.ResDisplaceTex);
     }
 
     void IFFTUpdate()

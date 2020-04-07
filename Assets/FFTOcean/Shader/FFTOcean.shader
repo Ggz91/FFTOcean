@@ -11,11 +11,13 @@
 
         Pass
         {
+            Cull off
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
             sampler2D _OceanHeightMap;
+            sampler2D _OceanDisplaceMap;
 
             #include "UnityCG.cginc"
 
@@ -39,8 +41,11 @@
                 v2f o;
                 o.uv = v.uv;
                 float height = tex2Dlod(_OceanHeightMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
+                float3 displace = tex2Dlod(_OceanDisplaceMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
                 real_pos.y += height;
+                real_pos.x += displace.z;
+                real_pos.z += displace.x;
                 o.vertex = UnityObjectToClipPos(real_pos);
                 return o;
             }

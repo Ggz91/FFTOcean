@@ -5,12 +5,15 @@
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float4> InputTex;
-RWTexture2D<float4> OutputTex;
+RWTexture2D<float4> HeightInputTex;
+RWTexture2D<float4> HeightOutputTex;
+RWTexture2D<float4> DisplaceInputTex;
+RWTexture2D<float4> DisplaceOutputTex;
 RWTexture2D<float4> LutTex;
 
 uint GroupSize;
 uint Stage;
+float Length;
 uint TotalStageCount;
 uint Size;
 int ComputeLine;
@@ -23,30 +26,57 @@ float CalSymbol(uint2 id)
     //return pow(-1, id.x * 1.0f - Size * 0.5f + id.y * 1.0f);
 }
 
+float2 CalKModule(float2 k, float2 input)
+{
+    float k_mag = CalMagnitude(k);
+    if (k_mag < 0.0001)
+    {
+        return float2(0, 0);
+    }
+    float2 res = k / k_mag;
+    res = MulComplex(res, input);
+    res = float2(res.y, -res.x);
+    return res;
+}
+
+float4 CalSum(float2 self, float2 pat, float2 weight, float reverse)
+{
+    float2 mul = -1 == reverse ? self : pat;
+    float2 non_mul = -1 == reverse ? pat : self;
+    float2 weight_pat_mul_com = MulComplex(weight, mul);
+    float real = reverse * weight_pat_mul_com.x + non_mul.x;
+    float ima = reverse * weight_pat_mul_com.y + non_mul.y;
+    return float4(real, 0, ima, 1);
+}
+
 [numthreads(8, 8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     uint2 cor = id.xy;
     cor.y = Stage;
     uint2 pat_cor;
+    cor.x = 1 == ComputeLine ? id.x : id.y;
+    float4 weight = LutTex[cor];
+    int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
+    uint2 real_index = id.xy;
     if(1 == ComputeLine)
     {
-        cor.x = id.x;
-        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
+        real_index.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
+        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x + reverse, TotalStageCount) : id.x;
         pat_cor.y = id.y;
     }
     else
     {
-        cor.x = id.y;
+        real_index.y = (0 == Stage) ? CalBitReverse(id.y, TotalStageCount) : id.y;
         pat_cor.x = id.x;
-        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y, TotalStageCount) : id.y;
+        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : id.y;
     }
-    float4 weight = LutTex[cor];
-    int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
-    float4 self_input = InputTex[id.xy];
-    float4 pat_input = InputTex[pat_cor];
+    float4 self_input = HeightInputTex[real_index];
+    float4 pat_input = HeightInputTex[pat_cor];
+    float4 self_displace_input = DisplaceInputTex[id.xy];
+    float4 pat_displace_input = DisplaceInputTex[pat_cor];
     //符号校正
-    if(1 == ComputeLine && 0 == Stage)
+    /*if(1 == ComputeLine && 0 == Stage)
     {
         float neg = cor.x % 2 == 0 ? 1 : -1;
         self_input *= neg;
@@ -57,24 +87,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         self_input *= CalSymbol(cor.xy);
         pat_input *= CalSymbol(pat_cor);
-    }
+    }*/
     float2 weight_com = float2(weight.x, weight.z);
     float2 pat_com = float2(pat_input.x, pat_input.z);
     float2 self_com = float2(self_input.x, self_input.z);
-    
-    if(1 == reverse)
-    {
-        float2 weight_pat_mul_com = MulComplex(weight_com, pat_com);
-        float real = weight_pat_mul_com.x + self_input.x;
-        float ima = weight_pat_mul_com.y + self_input.z;
-        OutputTex[id.xy] = float4(real ,0, ima, 1);
-    }
-    else
-    {
-        float2 weight_pat_mul_com = MulComplex(weight_com, self_com);
-        float real = -1 * weight_pat_mul_com.x + pat_input.x;
-        float ima = -1 * weight_pat_mul_com.y + pat_input.z;
-        OutputTex[id.xy] = float4(real ,0, ima, 1);
-    }
-    
+    float2 k_cor = float2(2.0f * PI * ((int)id.x - (int)Size/2)/Length, 2.0f * PI * ((int)id.y - (int)Size/2)/Length);
+    float2 displace_self_com = CalKModule(k_cor, float2(self_displace_input.x, self_displace_input.z));
+    float2 displace_pat_com = CalKModule(k_cor, float2(pat_displace_input.x, pat_displace_input.z));
+    HeightOutputTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
+    DisplaceOutputTex[id.xy] = CalSum(displace_self_com, displace_pat_com, weight_com, reverse);    
 }

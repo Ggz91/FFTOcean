@@ -11,6 +11,7 @@ public class IFFTUtil
     {
         public ComputeShader ComputeShader; //用来并行计算的shader
         public int Size; //输入变量大小
+        public float Length; //patch尺寸大小
         public RenderTexture BufferFlyLutTex;
     }
 
@@ -20,7 +21,13 @@ public class IFFTUtil
         private set;
     }
 
-    public RenderTexture ResTex
+    public RenderTexture ResHeightTex
+    {
+        get;
+        private set;
+    }
+
+    public RenderTexture ResDisplaceTex
     {
         get;
         private set;
@@ -29,8 +36,10 @@ public class IFFTUtil
     int m_stage_count = 0;
 
     int m_kernel;
-    RenderTexture m_ping_tex;
-    RenderTexture m_pong_tex;
+    RenderTexture m_height_ping_tex;
+    RenderTexture m_height_pong_tex;
+    RenderTexture m_displace_ping_tex;
+    RenderTexture m_displace_pong_tex;
     #endregion
 
     #region  method
@@ -43,38 +52,40 @@ public class IFFTUtil
 
     void CloneRenderTexture(RenderTexture source, ref RenderTexture dest)
     {
-        if(null == dest)
+        if (null == dest)
         {
-           InitTex(ref dest);
+            InitTex(ref dest);
         }
-        
+
         Graphics.CopyTexture(source, dest);
     }
 
     public void SetInputRenderTexture(RenderTexture rt)
     {
-        
-    #if _DEBUG_
-        CloneRenderTexture(rt,ref m_ping_tex);
-    #else
-        m_ping_tex = rt;
-    #endif
-        m_ping_tex.name = "IFFTHeight";
+        CloneRenderTexture(rt, ref m_height_ping_tex);
+        CloneRenderTexture(rt, ref m_displace_ping_tex);
+        m_height_ping_tex.name = "IFFTHeight";
+        m_displace_ping_tex.name = "IFFTDisplace";
     }
     public void UpdateUI()
     {
         GameObject canvas = GameObject.Find("Canvas");
-        GameObject spectrum_image = canvas?.transform.GetChild(1).gameObject;
-        RawImage m_raw_image = spectrum_image?.GetComponent<RawImage>();
+        GameObject spectrum_obj = canvas?.transform.GetChild(1).gameObject;
+        RawImage spectrum_image = spectrum_obj?.GetComponent<RawImage>();
         /*float scale = m_param.Size * 1.0f / 100;
         m_raw_image.rectTransform.localScale = new Vector3(scale, scale, scale);*/
-        m_raw_image.texture = ResTex;
+        spectrum_image.texture = ResHeightTex;
+
+        GameObject displace_obj = canvas?.transform.GetChild(2).gameObject;
+        RawImage displace_image = displace_obj?.GetComponent<RawImage>();
+        displace_image.texture = ResDisplaceTex;
     }
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
-        if(null != m_param.BufferFlyLutTex)
+        m_param.ComputeShader.SetFloat(CommonData.IFFTComputeLenghtName, m_param.Length);
+        if (null != m_param.BufferFlyLutTex)
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
         }
@@ -89,46 +100,69 @@ public class IFFTUtil
         int i = 0;
         //计算行
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 1);
-        for(; i<m_stage_count; ++i)
+        for (; i < m_stage_count; ++i)
         {
             CalStageOutput(i);
         }
         //重新对齐一下输入
-        bool even = (i-1) % 2 != 0;
+        bool even = (i - 1) % 2 != 0;
         //计算列
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 0);
-        for(i = 0; i<m_stage_count; ++i)
+        for (i = 0; i < m_stage_count; ++i)
         {
             CalStageOutput(i, even);
         }
-        if((i-1)%2 != 0)
+        if ((i - 1) % 2 != 0)
         {
-            ResTex = even ? m_pong_tex : m_ping_tex;
+            ResHeightTex = even ? m_height_pong_tex : m_height_ping_tex;
+            ResDisplaceTex = even ? m_displace_pong_tex : m_displace_ping_tex;
         }
         else
         {
-            ResTex = even ? m_ping_tex : m_pong_tex;
+            ResHeightTex = even ? m_height_ping_tex : m_height_pong_tex;
+            ResDisplaceTex = even ? m_displace_ping_tex : m_displace_pong_tex;
         }
         OnDone();
     }
-
-    void CalStageOutput(int stage, bool reverse = false)
+    void CalDisplace(int stage, bool reverse)
     {
         bool even = stage % 2 != 0;
-        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, stage);
-        int GroupSize = (int)Mathf.Pow(2, stage+1);
-        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
+
         //设置ping pong坐标翻转操作
-        if(!even)
+        if (!even)
         {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, reverse ? m_pong_tex : m_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, reverse ? m_ping_tex : m_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceInputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_ping_tex : m_displace_pong_tex);
         }
         else
         {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeInputBufferName, reverse ? m_ping_tex : m_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeOutputBufferName, reverse ? m_pong_tex : m_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceInputBufferName, reverse ? m_displace_ping_tex : m_displace_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
         }
+    }
+    void CalHeight(int stage, bool reverse = false)
+    {
+        bool even = stage % 2 != 0;
+
+        //设置ping pong坐标翻转操作
+        if (!even)
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightInputBufferName, reverse ? m_height_pong_tex : m_height_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightOutputBufferName, reverse ? m_height_ping_tex : m_height_pong_tex);
+        }
+        else
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightInputBufferName, reverse ? m_height_ping_tex : m_height_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightOutputBufferName, reverse ? m_height_pong_tex : m_height_ping_tex);
+        }
+    }
+    void CalStageOutput(int stage, bool reverse = false)
+    {
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, stage);
+        int GroupSize = (int)Mathf.Pow(2, stage + 1);
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
+        CalHeight(stage, reverse);
+        CalDisplace(stage, reverse);
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
@@ -140,9 +174,9 @@ public class IFFTUtil
 
     void InitTex(ref RenderTexture rt)
     {
-        if(null == rt || rt.width != m_param.Size || rt.height != m_param.Size)
+        if (null == rt || rt.width != m_param.Size || rt.height != m_param.Size)
         {
-            if(null != rt)
+            if (null != rt)
             {
                 RenderTexture.DestroyImmediate(rt);
             }
@@ -161,14 +195,15 @@ public class IFFTUtil
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeTotalStageCountName, m_stage_count);
 
         //InitTex(m_ping_tex);
-        InitTex(ref m_pong_tex);
+        InitTex(ref m_height_pong_tex);
+        InitTex(ref m_displace_pong_tex);
     }
 
     public void Leave()
     {
-        RenderTexture.DestroyImmediate(m_ping_tex);
-        RenderTexture.DestroyImmediate(m_pong_tex);
+        RenderTexture.DestroyImmediate(m_height_ping_tex);
+        RenderTexture.DestroyImmediate(m_height_pong_tex);
     }
     #endregion
-    
+
 }

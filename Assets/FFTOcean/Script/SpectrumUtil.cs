@@ -53,9 +53,9 @@ public class SpectrumUtil
         m_param.ComputeShader.SetInt(CommonData.SpectrumComputeResoName, m_param.Resolution);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeSizeName, m_param.Size);
         Vector2 wind_dir = m_param.Wind.normalized;
-        float[] wind_dir_arr = {wind_dir.x, wind_dir.y};
+        float[] wind_dir_arr = { wind_dir.x, wind_dir.y };
         float wind_speed = m_param.Wind.magnitude;
-        m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution,32);
+        m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution, 32);
         m_spectrum_tex.format = RenderTextureFormat.ARGBFloat;
         m_spectrum_tex.enableRandomWrite = true;
         m_spectrum_tex.wrapMode = TextureWrapMode.Repeat;
@@ -63,16 +63,16 @@ public class SpectrumUtil
         m_spectrum_tex.Create();
         m_spectrum_tex.name = "SpectrumTex";
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
-        if(null == m_wind_dir_buff)
+        if (null == m_wind_dir_buff)
         {
-            m_wind_dir_buff = new ComputeBuffer(2,4);
+            m_wind_dir_buff = new ComputeBuffer(2, 4);
         }
         m_wind_dir_buff.SetData(wind_dir_arr);
         m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeWindDirName, m_wind_dir_buff);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeWindSpeedName, wind_speed);
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeAmplitudeName, m_param.Amplitude);
 
-        if(null == m_rand_pair_buff)
+        if (null == m_rand_pair_buff)
         {
             m_rand_pair_buff = new ComputeBuffer(4, 4);
         }
@@ -80,11 +80,11 @@ public class SpectrumUtil
         Vector2 rand_pair0 = MathUtil.CalGaussianRandomVariablePair();
         Vector2 rand_pair1 = MathUtil.CalGaussianRandomVariablePair();
         //Debug.Log("[SpectrumUtil] rand pair : " + rand_pair.ToString());
-        float[] rand_pair_arr =  {rand_pair0.x, rand_pair0.y, rand_pair1.x, rand_pair1.y};
+        float[] rand_pair_arr = { rand_pair0.x, rand_pair0.y, rand_pair1.x, rand_pair1.y };
         m_rand_pair_buff.SetData(rand_pair_arr);
         m_param.ComputeShader.SetBuffer(m_kernel, CommonData.SpectrumComputeRandPairName, m_rand_pair_buff);
     }
-    
+
     void UpdateComputeShaderDynamicData()
     {
         m_param.ComputeShader.SetFloat(CommonData.SpectrumComputeTimeName, Time.time);
@@ -98,7 +98,7 @@ public class SpectrumUtil
     public void Execute()
     {
         UpdateComputeShaderDynamicData();
-        m_param.ComputeShader.Dispatch(m_kernel, m_param.Resolution/8, m_param.Resolution/8, 1);
+        m_param.ComputeShader.Dispatch(m_kernel, m_param.Resolution / 8, m_param.Resolution / 8, 1);
     }
 
     public void Leave()

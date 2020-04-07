@@ -6,8 +6,11 @@ using UnityEngine;
 public class CommonData
 {
     static public string IFFTComputeKernelName = "CSMain";
-    static public string IFFTComputeInputBufferName = "InputTex";
-    static public string IFFTComputeOutputBufferName = "OutputTex";
+    static public string IFFTComputeHeightInputBufferName = "HeightInputTex";
+    static public string IFFTComputeHeightOutputBufferName = "HeightOutputTex";
+
+    static public string IFFTComputeDisplaceInputBufferName = "DisplaceInputTex";
+    static public string IFFTComputeDisplaceOutputBufferName = "DisplaceOutputTex";
     static public Vector2Int TexSize = new Vector2Int(1024, 1024);
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";
@@ -24,8 +27,10 @@ public class CommonData
     static public string SpectrumComputeAmplitudeName = "Amplitude";
     static public string SpectrumComputeOutputTexName = "SpectrumTex";
     static public string IFFTComputeSizeName = "Size";
+    static public string IFFTComputeLenghtName = "Length";
     static public string IFFTComputeCalLineName = "ComputeLine";
     static public string IFFTComputeTotalStageCountName = "TotalStageCount";
     static public string IFFTLutTexName = "LutTex";
-    static public string OCeanMatHeightTexName = "_OceanHeightMap";
+    static public string OceanMatHeightTexName = "_OceanHeightMap";
+    static public string OceanMatDisplaceTexName = "_OceanDisplaceMap";
 }

@@ -12,7 +12,7 @@ public class RealTimeComputeComponent
     2、海洋参数设置")]
     [MinValue(1)]
     public int Resolution = 64;
-    
+
     [BoxGroup("Mesh Param")]
     public Vector3 Position = Vector3.zero;
 
@@ -36,7 +36,7 @@ public class RealTimeComputeComponent
     [Button("Gen Ocean")]
     void GenOcean()
     {
-      
+
         Mesh mesh = GenMeshImp();
         GenGameObj(mesh);
         Debug.Log("[GenMesh] Done");
@@ -93,8 +93,9 @@ public class RealTimeComputeComponent
     void FillIFFTData(ref FFTOceanMonoComponent.InitParam param)
     {
         param.IFFTParam.Size = Resolution;
+        param.IFFTParam.Length = Resolution * UnitSize;
         param.IFFTParam.ComputeShader = IFFTShader;
-        
+
         param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
     }
 
@@ -107,26 +108,26 @@ public class RealTimeComputeComponent
         List<Vector2> uvs = new List<Vector2>();
         List<int> indice = new List<int>();
         int index = -1;
-        for(int i = -Resolution/2; i <= Resolution/2; ++i)
+        for (int i = -Resolution / 2; i <= Resolution / 2; ++i)
         {
-            for(int j = -Resolution/2; j <= Resolution/2; ++j)
+            for (int j = -Resolution / 2; j <= Resolution / 2; ++j)
             {
                 index++;
                 //顶点位置
                 Vector3 offset = new Vector3(i * UnitSize, 0, j * UnitSize);
                 pos.Add(Position + offset);
                 normal.Add(new Vector3(0, 1, 0));
-                Vector2 uv = new Vector2((i + Resolution / 2 ) * 1.0f/(Resolution-1), (j + Resolution / 2 ) * 1.0f/(Resolution-1));
+                Vector2 uv = new Vector2((i + Resolution / 2) * 1.0f / (Resolution - 1), (j + Resolution / 2) * 1.0f / (Resolution - 1));
                 uvs.Add(uv);
                 /*Debug.Log("[GenMesh] pos : " + offset.ToString()
                 + " uv : " + uv.ToString());*/
                 //三角形indice,逆时针
                 //最后一行和最后一列不生成
-                if(Resolution/2 == i || Resolution/2 == j)
+                if (Resolution / 2 == i || Resolution / 2 == j)
                 {
                     continue;
                 }
-                
+
                 int left_bottom = index;
                 int right_bottom = left_bottom + 1;
                 int left_top = index + Resolution + 1;
@@ -160,7 +161,7 @@ public class RealTimeComputeComponent
         InitDefaultValues();
     }
 
-     void InitDefaultComputeShader()
+    void InitDefaultComputeShader()
     {
         //spectrum shader
         string default_spectrum_compute_shader = @"Assets/FFTOcean/Shader/SpectrumComputeShader.compute";
