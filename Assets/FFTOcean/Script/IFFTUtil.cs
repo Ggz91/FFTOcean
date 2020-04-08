@@ -40,6 +40,7 @@ public class IFFTUtil
     RenderTexture m_height_pong_tex;
     RenderTexture m_displace_ping_tex;
     RenderTexture m_displace_pong_tex;
+    RenderTexture m_debug_tex;
     #endregion
 
     #region  method
@@ -78,6 +79,11 @@ public class IFFTUtil
 
         GameObject displace_obj = canvas?.transform.GetChild(2).gameObject;
         RawImage displace_image = displace_obj?.GetComponent<RawImage>();
+        /*#if !_DEBUG_
+                displace_image.texture = ResDisplaceTex;
+        #else
+                displace_image.texture = m_debug_tex;
+        #endif*/
         displace_image.texture = ResDisplaceTex;
     }
     void InitComputeShaderData()
@@ -89,6 +95,8 @@ public class IFFTUtil
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
         }
+
+
     }
 
     public void Begin()
@@ -197,6 +205,10 @@ public class IFFTUtil
         //InitTex(m_ping_tex);
         InitTex(ref m_height_pong_tex);
         InitTex(ref m_displace_pong_tex);
+        /*#if _DEBUG_
+                InitTex(ref m_debug_tex);
+                m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
+        #endif*/
     }
 
     public void Leave()

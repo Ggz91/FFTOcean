@@ -33,4 +33,7 @@ public class CommonData
     static public string IFFTLutTexName = "LutTex";
     static public string OceanMatHeightTexName = "_OceanHeightMap";
     static public string OceanMatDisplaceTexName = "_OceanDisplaceMap";
+    /*#if _DEBUG_
+        static public string IFFTDebugTexName = "DebugTex";
+    #endif*/
 }

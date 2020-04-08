@@ -44,8 +44,8 @@
                 float3 displace = tex2Dlod(_OceanDisplaceMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
                 real_pos.y += height;
-                real_pos.x += displace.z;
-                real_pos.z += displace.x;
+                real_pos.x += displace.x;
+                real_pos.z += displace.z;
                 o.vertex = UnityObjectToClipPos(real_pos);
                 return o;
             }

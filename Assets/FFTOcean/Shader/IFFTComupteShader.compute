@@ -10,6 +10,7 @@ RWTexture2D<float4> HeightOutputTex;
 RWTexture2D<float4> DisplaceInputTex;
 RWTexture2D<float4> DisplaceOutputTex;
 RWTexture2D<float4> LutTex;
+//RWTexture2D<float4> DebugTex;
 
 uint GroupSize;
 uint Stage;
@@ -62,21 +63,21 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(1 == ComputeLine)
     {
         real_index.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
-        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x + reverse, TotalStageCount) : id.x;
+        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x + reverse, TotalStageCount) : (id.x + reverse * (int)GroupSize/2);
         pat_cor.y = id.y;
     }
     else
     {
         real_index.y = (0 == Stage) ? CalBitReverse(id.y, TotalStageCount) : id.y;
         pat_cor.x = id.x;
-        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : id.y;
+        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : (id.y + reverse * (int)GroupSize/2);
     }
     float4 self_input = HeightInputTex[real_index];
     float4 pat_input = HeightInputTex[pat_cor];
     float4 self_displace_input = DisplaceInputTex[id.xy];
     float4 pat_displace_input = DisplaceInputTex[pat_cor];
     //符号校正
-    /*if(1 == ComputeLine && 0 == Stage)
+    if(1 == ComputeLine && 0 == Stage)
     {
         float neg = cor.x % 2 == 0 ? 1 : -1;
         self_input *= neg;
@@ -87,7 +88,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         self_input *= CalSymbol(cor.xy);
         pat_input *= CalSymbol(pat_cor);
-    }*/
+    }
     float2 weight_com = float2(weight.x, weight.z);
     float2 pat_com = float2(pat_input.x, pat_input.z);
     float2 self_com = float2(self_input.x, self_input.z);

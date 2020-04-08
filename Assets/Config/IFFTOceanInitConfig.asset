@@ -15,7 +15,7 @@ MonoBehaviour:
   SpectrumParam:
     Resolution: 64
     ComputeShader: {fileID: 7200000, guid: a89d54e0b44bfa645a93d0f63801a3a6, type: 3}
-    Wind: {x: 1, y: 0}
+    Wind: {x: 16, y: 0}
     Amplitude: 0.2
     Size: 32
   IFFTParam:

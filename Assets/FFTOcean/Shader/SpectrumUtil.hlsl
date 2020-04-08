@@ -22,7 +22,9 @@ float CalPhillipsModule(float2 cor, float a, float2 w, float v)
     float abs_dot = abs(cor.x * w.x + cor.y * w.y);
     float k_square = k_mag * k_mag;
     float k_forth_power = k_square * k_square;
-    return a * exp(-1 * 1.0f / (k_square * s * s)) / k_forth_power * abs_dot * abs_dot;
+    float damping = 0.001f;
+    float l2 = s * s * damping * damping;
+    return a * exp(-1 * 1.0f / (k_square * s * s)) / k_forth_power * abs_dot * abs_dot * exp(-k_square * l2);
 }
 
 //计算频谱的系数
