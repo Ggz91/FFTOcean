@@ -192,7 +192,7 @@ public class IFFTUtil
             rt.enableRandomWrite = true;
             rt.format = RenderTextureFormat.ARGBFloat;
             rt.wrapMode = TextureWrapMode.Repeat;
-            rt.filterMode = FilterMode.Point;
+            rt.filterMode = FilterMode.Trilinear;
             rt.Create();
         }
     }

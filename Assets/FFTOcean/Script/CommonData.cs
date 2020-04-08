@@ -36,4 +36,6 @@ public class CommonData
     /*#if _DEBUG_
         static public string IFFTDebugTexName = "DebugTex";
     #endif*/
+    static public string SpecturmDebugTexName = "DebugTex";
+
 }

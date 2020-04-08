@@ -28,6 +28,7 @@ public class SpectrumUtil
     ComputeBuffer m_wind_dir_buff = null;
     ComputeBuffer m_rand_pair_buff = null;
     RawImage m_raw_image;
+    RenderTexture m_debug_tex;
     #endregion
 
     #region  method
@@ -39,6 +40,10 @@ public class SpectrumUtil
         /*float scale = m_param.Size / 100;
         m_raw_image.rectTransform.localScale = new Vector3(scale, scale, scale);*/
         m_raw_image.texture = m_spectrum_tex;
+
+        GameObject debug_image = canvas?.transform.GetChild(3).gameObject;
+        RawImage debug_tex = debug_image?.GetComponent<RawImage>();
+        debug_tex.texture = m_debug_tex;
     }
     public void InitData(InitParam param)
     {
@@ -46,7 +51,15 @@ public class SpectrumUtil
         InitComputeShaderStaticData();
         InitUI();
     }
-
+    void InitTex(ref RenderTexture rt)
+    {
+        rt = new RenderTexture(m_param.Resolution, m_param.Resolution, 32);
+        rt.format = RenderTextureFormat.ARGBFloat;
+        rt.enableRandomWrite = true;
+        rt.wrapMode = TextureWrapMode.Repeat;
+        rt.filterMode = FilterMode.Trilinear;
+        rt.Create();
+    }
     void InitComputeShaderStaticData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.SpectrumComputeKernelName);
@@ -55,14 +68,12 @@ public class SpectrumUtil
         Vector2 wind_dir = m_param.Wind.normalized;
         float[] wind_dir_arr = { wind_dir.x, wind_dir.y };
         float wind_speed = m_param.Wind.magnitude;
-        m_spectrum_tex = new RenderTexture(m_param.Resolution, m_param.Resolution, 32);
-        m_spectrum_tex.format = RenderTextureFormat.ARGBFloat;
-        m_spectrum_tex.enableRandomWrite = true;
-        m_spectrum_tex.wrapMode = TextureWrapMode.Repeat;
-        m_spectrum_tex.filterMode = FilterMode.Point;
-        m_spectrum_tex.Create();
+        InitTex(ref m_spectrum_tex);
         m_spectrum_tex.name = "SpectrumTex";
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpectrumComputeOutputTexName, m_spectrum_tex);
+        InitTex(ref m_debug_tex);
+        m_debug_tex.name = "DebugTex";
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.SpecturmDebugTexName, m_debug_tex);
         if (null == m_wind_dir_buff)
         {
             m_wind_dir_buff = new ComputeBuffer(2, 4);
