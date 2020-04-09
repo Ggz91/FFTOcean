@@ -32,14 +32,24 @@ public class IFFTUtil
         get;
         private set;
     }
+
+    public RenderTexture ResPostTex
+    {
+        get;
+        private set;
+    }
+
     InitParam m_param;
     int m_stage_count = 0;
 
     int m_kernel;
+    int m_post_kernel;
     RenderTexture m_height_ping_tex;
     RenderTexture m_height_pong_tex;
     RenderTexture m_displace_ping_tex;
     RenderTexture m_displace_pong_tex;
+    RenderTexture m_normal_ping_tex;
+    RenderTexture m_normal_pong_tex;
     RenderTexture m_debug_tex;
     #endregion
 
@@ -65,8 +75,10 @@ public class IFFTUtil
     {
         CloneRenderTexture(rt, ref m_height_ping_tex);
         CloneRenderTexture(rt, ref m_displace_ping_tex);
+        CloneRenderTexture(rt, ref m_normal_ping_tex);
         m_height_ping_tex.name = "IFFTHeight";
         m_displace_ping_tex.name = "IFFTDisplace";
+        m_normal_ping_tex.name = "IFFTNormal";
     }
     public void UpdateUI()
     {
@@ -89,6 +101,7 @@ public class IFFTUtil
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
+        m_post_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTPostKernelName);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
         m_param.ComputeShader.SetFloat(CommonData.IFFTComputeLenghtName, m_param.Length);
         if (null != m_param.BufferFlyLutTex)
@@ -97,6 +110,17 @@ public class IFFTUtil
         }
 
 
+    }
+    
+    void NormalPost()
+    {
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalInputBufferName, ResPostTex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalOutputBufferName, (ResPostTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex);
+        ResPostTex = (ResPostTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
+    }
+    void PostHandle()
+    {
+        NormalPost();
     }
 
     public void Begin()
@@ -120,16 +144,20 @@ public class IFFTUtil
         {
             CalStageOutput(i, even);
         }
+
         if ((i - 1) % 2 != 0)
         {
             ResHeightTex = even ? m_height_pong_tex : m_height_ping_tex;
             ResDisplaceTex = even ? m_displace_pong_tex : m_displace_ping_tex;
+            ResPostTex = even ? m_normal_pong_tex : m_normal_ping_tex;
         }
         else
         {
             ResHeightTex = even ? m_height_ping_tex : m_height_pong_tex;
             ResDisplaceTex = even ? m_displace_ping_tex : m_displace_pong_tex;
+            ResPostTex = even ? m_normal_ping_tex : m_normal_pong_tex;
         }
+        PostHandle();
         OnDone();
     }
     void CalDisplace(int stage, bool reverse)
@@ -148,6 +176,24 @@ public class IFFTUtil
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
         }
     }
+
+    void CalNormal(int stage, bool reverse)
+    {
+        bool even = stage % 2 != 0;
+
+        //设置ping pong坐标翻转操作
+        if (!even)
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalInputBufferName, reverse ? m_normal_pong_tex : m_normal_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalOutputBufferName, reverse ? m_normal_ping_tex : m_normal_pong_tex);
+        }
+        else
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalInputBufferName, reverse ? m_normal_ping_tex : m_normal_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalOutputBufferName, reverse ? m_normal_pong_tex : m_normal_ping_tex);
+        }
+    }
+
     void CalHeight(int stage, bool reverse = false)
     {
         bool even = stage % 2 != 0;
@@ -171,6 +217,7 @@ public class IFFTUtil
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
         CalHeight(stage, reverse);
         CalDisplace(stage, reverse);
+        CalNormal(stage, reverse);
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
@@ -205,6 +252,7 @@ public class IFFTUtil
         //InitTex(m_ping_tex);
         InitTex(ref m_height_pong_tex);
         InitTex(ref m_displace_pong_tex);
+        InitTex(ref m_normal_pong_tex);
         /*#if _DEBUG_
                 InitTex(ref m_debug_tex);
                 m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);

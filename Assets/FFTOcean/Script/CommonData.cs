@@ -6,11 +6,14 @@ using UnityEngine;
 public class CommonData
 {
     static public string IFFTComputeKernelName = "CSMain";
+    static public string IFFTPostKernelName = "PostKernel";
     static public string IFFTComputeHeightInputBufferName = "HeightInputTex";
     static public string IFFTComputeHeightOutputBufferName = "HeightOutputTex";
 
     static public string IFFTComputeDisplaceInputBufferName = "DisplaceInputTex";
     static public string IFFTComputeDisplaceOutputBufferName = "DisplaceOutputTex";
+    static public string IFFTComputeNormalInputBufferName = "NormalInputTex";
+    static public string IFFTComputeNormalOutputBufferName = "NormalOutputTex";
     static public Vector2Int TexSize = new Vector2Int(1024, 1024);
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";

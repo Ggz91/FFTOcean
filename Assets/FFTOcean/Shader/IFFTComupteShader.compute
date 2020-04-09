@@ -1,5 +1,6 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+#pragma kernel PostKernel
 
 # include "MathUtil.hlsl"
 
@@ -9,6 +10,8 @@ RWTexture2D<float4> HeightInputTex;
 RWTexture2D<float4> HeightOutputTex;
 RWTexture2D<float4> DisplaceInputTex;
 RWTexture2D<float4> DisplaceOutputTex;
+RWTexture2D<float4> NormalInputTex;
+RWTexture2D<float4> NormalOutputTex;
 RWTexture2D<float4> LutTex;
 //RWTexture2D<float4> DebugTex;
 
@@ -21,13 +24,13 @@ int ComputeLine;
 
 float CalSymbol(uint2 id)
 {
-    int exp = id.x + id.y - Size / 2;
+    int exp = (int)id.x + (int)id.y - (int)Size / 2;
     return (exp % 2 != 0) ? -1 : 1;
     //pow 不支持底为复数
     //return pow(-1, id.x * 1.0f - Size * 0.5f + id.y * 1.0f);
 }
 
-float2 CalKModule(float2 k, float2 input)
+float2 CalDisplaceKModule(float2 k, float2 input)
 {
     float k_mag = CalMagnitude(k);
     if (k_mag < 0.0001)
@@ -37,6 +40,17 @@ float2 CalKModule(float2 k, float2 input)
     float2 res = k / k_mag;
     res = MulComplex(res, input);
     res = float2(res.y, -res.x);
+    return res;
+}
+
+float4 CalNormalModule(float2 k, float2 input)
+{
+    //取实部作为对应的值
+    float4 res;
+    res.x = -1 * (k.x * input.y);
+    res.y = k.x * input.x;
+    res.z = -1 * (k.y * input.y);
+    res.w = k.y * input.x;
     return res;
 }
 
@@ -74,27 +88,61 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
     float4 self_input = HeightInputTex[real_index];
     float4 pat_input = HeightInputTex[pat_cor];
-    float4 self_displace_input = DisplaceInputTex[id.xy];
+    float4 self_displace_input = DisplaceInputTex[real_index];
     float4 pat_displace_input = DisplaceInputTex[pat_cor];
+    float4 self_normal_input = NormalInputTex[real_index];
+    float4 pat_normal_input = NormalInputTex[pat_cor];
     //符号校正
     if(1 == ComputeLine && 0 == Stage)
     {
         float neg = cor.x % 2 == 0 ? 1 : -1;
         self_input *= neg;
+        self_displace_input *= neg;
+        self_normal_input *= neg;
+
         neg = pat_cor.x % 2 == 0 ? 1 : - 1;
         pat_input *= neg;
+        pat_displace_input *= neg;
+        pat_normal_input *= neg;
     }
     else if(0 == ComputeLine && 0 == Stage)
     {
-        self_input *= CalSymbol(cor.xy);
-        pat_input *= CalSymbol(pat_cor);
+        float neg = CalSymbol(cor.xy);
+        self_input *= neg;
+        self_displace_input *= neg;
+        self_normal_input *= neg;
+
+        neg = CalSymbol(pat_cor.xy);
+        pat_input *= neg;
+        pat_displace_input *= neg;
+        pat_normal_input *= neg;
     }
+
+    //高度图计算
     float2 weight_com = float2(weight.x, weight.z);
     float2 pat_com = float2(pat_input.x, pat_input.z);
     float2 self_com = float2(self_input.x, self_input.z);
-    float2 k_cor = float2(2.0f * PI * ((int)id.x - (int)Size/2)/Length, 2.0f * PI * ((int)id.y - (int)Size/2)/Length);
-    float2 displace_self_com = CalKModule(k_cor, float2(self_displace_input.x, self_displace_input.z));
-    float2 displace_pat_com = CalKModule(k_cor, float2(pat_displace_input.x, pat_displace_input.z));
     HeightOutputTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
+   
+    //displace计算
+    float2 k_cor = float2(2.0f * PI * ((int)id.x - (int)Size/2)/Length, 2.0f * PI * ((int)id.y - (int)Size/2)/Length);
+    float2 self_displace_input_com = float2(self_displace_input.x, self_displace_input.z);
+    float2 pat_displace_input_com = float2(pat_displace_input.x, pat_displace_input.z);
+    float2 displace_self_com = 0 == Stage ? CalDisplaceKModule(k_cor, self_displace_input_com) : self_displace_input_com;
+    float2 displace_pat_com = 0 == Stage ? CalDisplaceKModule(k_cor, pat_displace_input_com) : pat_displace_input_com;
     DisplaceOutputTex[id.xy] = CalSum(displace_self_com, displace_pat_com, weight_com, reverse);    
+
+    //normal计算,这里的complex中 xy表示x方向的complex，zw表示z方向的complex
+    float4 normal_self_com = 0 == Stage ? CalNormalModule(k_cor, self_normal_input) : self_normal_input;
+    float4 normal_pat_com = 0 == Stage ? CalNormalModule(k_cor, pat_normal_input) : pat_normal_input;  
+    float4 normal_x_complex = CalSum(normal_self_com.xy, normal_pat_com.xy, weight_com, reverse);
+    float4 normal_z_complex = CalSum(normal_self_com.zw, normal_pat_com.zw, weight_com, reverse);
+    NormalOutputTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+}
+
+[numthreads(8, 8,1)]
+void PostKernel (uint3 id : SV_DispatchThreadID)
+{
+    float4 normal = float4(NormalInputTex[id.xy].x, 0, NormalInputTex[id.xy].z, 0);
+    NormalOutputTex[id.xy] = float4(0, 1, 0, 1) - normal;
 }
