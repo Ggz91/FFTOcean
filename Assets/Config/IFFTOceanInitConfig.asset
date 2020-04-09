@@ -15,7 +15,7 @@ MonoBehaviour:
   SpectrumParam:
     Resolution: 64
     ComputeShader: {fileID: 7200000, guid: a89d54e0b44bfa645a93d0f63801a3a6, type: 3}
-    Wind: {x: 16, y: 0}
+    Wind: {x: 1, y: 0}
     Amplitude: 0.2
     Size: 32
   IFFTParam:
@@ -23,3 +23,6 @@ MonoBehaviour:
     Size: 64
     Length: 32
     BufferFlyLutTex: {fileID: 8400000, guid: 3183ac621a80a734b98d482bb8042b32, type: 2}
+  OceanMatParam:
+    HorizonScale: 0.1
+    VerticalScale: 1

@@ -33,7 +33,7 @@ public class IFFTUtil
         private set;
     }
 
-    public RenderTexture ResPostTex
+    public RenderTexture ResNormalTex
     {
         get;
         private set;
@@ -98,6 +98,7 @@ public class IFFTUtil
         #endif*/
         displace_image.texture = ResDisplaceTex;
     }
+
     void InitComputeShaderData()
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
@@ -108,18 +109,20 @@ public class IFFTUtil
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
         }
-
-
     }
     
     void NormalPost()
     {
-        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalInputBufferName, ResPostTex);
-        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalOutputBufferName, (ResPostTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex);
-        ResPostTex = (ResPostTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
+        //梯度转normal
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalInputBufferName, ResNormalTex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalOutputBufferName, (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex);
+        m_param.ComputeShader.Dispatch(m_post_kernel, m_param.Size / 8, m_param.Size / 8, 1);
+        ResNormalTex = (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
     }
+    
     void PostHandle()
     {
+        //后处理的一些操作
         NormalPost();
     }
 
@@ -149,13 +152,13 @@ public class IFFTUtil
         {
             ResHeightTex = even ? m_height_pong_tex : m_height_ping_tex;
             ResDisplaceTex = even ? m_displace_pong_tex : m_displace_ping_tex;
-            ResPostTex = even ? m_normal_pong_tex : m_normal_ping_tex;
+            ResNormalTex = even ? m_normal_pong_tex : m_normal_ping_tex;
         }
         else
         {
             ResHeightTex = even ? m_height_ping_tex : m_height_pong_tex;
             ResDisplaceTex = even ? m_displace_ping_tex : m_displace_pong_tex;
-            ResPostTex = even ? m_normal_ping_tex : m_normal_pong_tex;
+            ResNormalTex = even ? m_normal_ping_tex : m_normal_pong_tex;
         }
         PostHandle();
         OnDone();

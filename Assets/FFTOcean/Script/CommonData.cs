@@ -9,7 +9,6 @@ public class CommonData
     static public string IFFTPostKernelName = "PostKernel";
     static public string IFFTComputeHeightInputBufferName = "HeightInputTex";
     static public string IFFTComputeHeightOutputBufferName = "HeightOutputTex";
-
     static public string IFFTComputeDisplaceInputBufferName = "DisplaceInputTex";
     static public string IFFTComputeDisplaceOutputBufferName = "DisplaceOutputTex";
     static public string IFFTComputeNormalInputBufferName = "NormalInputTex";
@@ -36,6 +35,8 @@ public class CommonData
     static public string IFFTLutTexName = "LutTex";
     static public string OceanMatHeightTexName = "_OceanHeightMap";
     static public string OceanMatDisplaceTexName = "_OceanDisplaceMap";
+    static public string OceanMatNormalTexName = "_OceanNormalMap";
+    static public string OceanMatScaleName = "_OceanScale";
     /*#if _DEBUG_
         static public string IFFTDebugTexName = "DebugTex";
     #endif*/

@@ -64,6 +64,12 @@ float4 CalSum(float2 self, float2 pat, float2 weight, float reverse)
     return float4(real, 0, ima, 1);
 }
 
+float3 NormalizeVector(float3 normal)
+{
+    float length = CalMagnitude(normal);
+    return normal / length;
+}
+
 [numthreads(8, 8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -118,6 +124,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         pat_normal_input *= neg;
     }
 
+
     //高度图计算
     float2 weight_com = float2(weight.x, weight.z);
     float2 pat_com = float2(pat_input.x, pat_input.z);
@@ -138,11 +145,21 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 normal_x_complex = CalSum(normal_self_com.xy, normal_pat_com.xy, weight_com, reverse);
     float4 normal_z_complex = CalSum(normal_self_com.zw, normal_pat_com.zw, weight_com, reverse);
     NormalOutputTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+
+    //最后的符号校正
+    if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
+    {
+        float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
+        HeightInputTex[id.xy] *= neg;
+        DisplaceOutputTex[id.xy] *= neg;
+        NormalOutputTex[id.xy] *= neg;
+    }
 }
 
 [numthreads(8, 8,1)]
 void PostKernel (uint3 id : SV_DispatchThreadID)
 {
-    float4 normal = float4(NormalInputTex[id.xy].x, 0, NormalInputTex[id.xy].z, 0);
-    NormalOutputTex[id.xy] = float4(0, 1, 0, 1) - normal;
+    float3 normal = float3(0, 1, 0) - float3(NormalInputTex[id.xy].x, 0, NormalInputTex[id.xy].z);
+    normal = NormalizeVector(normal);
+    NormalOutputTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
 }

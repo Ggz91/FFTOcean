@@ -2,7 +2,6 @@
 {
     Properties
     {
-        _OceanHeightMap("OceanHeightMap", 2D) = "white"{}
     }
     SubShader
     {
@@ -11,13 +10,14 @@
 
         Pass
         {
-            Cull off
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
 
             sampler2D _OceanHeightMap;
             sampler2D _OceanDisplaceMap;
+            sampler2D _OceanNormalMap;
+            float _OceanScale[3];
 
             #include "UnityCG.cginc"
 
@@ -43,9 +43,9 @@
                 float height = tex2Dlod(_OceanHeightMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
                 float3 displace = tex2Dlod(_OceanDisplaceMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
-                real_pos.y += height * 3;
-                real_pos.x += displace.x;
-                real_pos.z += displace.z;
+                real_pos.y += height * _OceanScale[1];
+                real_pos.x += displace.x * _OceanScale[0];
+                real_pos.z += displace.z * _OceanScale[2];
                 o.vertex = UnityObjectToClipPos(real_pos);
                 return o;
             }

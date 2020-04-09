@@ -33,6 +33,10 @@ public class RealTimeComputeComponent
     [BoxGroup("IFFT")]
     public ComputeShader IFFTShader;
 
+    [BoxGroup("Material")]
+    [InfoBox("Scale.x表示x z方向的位移影响，Scale.y表示y方向的位移影响")]
+    public Vector2 Scale = new Vector2(0.2f, 1);
+
     [Button("Gen Ocean")]
     void GenOcean()
     {
@@ -68,13 +72,18 @@ public class RealTimeComputeComponent
         //添加材质
         AddMaterial(obj);
     }
-
+    void FillMaterialData(ref FFTOceanMonoComponent.InitParam param)
+    {
+        param.OceanMatParam.HorizonScale = Scale.x;
+        param.OceanMatParam.VerticalScale = Scale.y;
+    }
     void FillObjData(GameObject obj)
     {
         FFTOceanMonoComponent.InitParam init_param = ScriptableObject.CreateInstance<FFTOceanMonoComponent.InitParam>();
         //填充相关数据
         FillSpectrumData(ref init_param);
         FillIFFTData(ref init_param);
+        FillMaterialData(ref init_param);
         obj.GetComponent<FFTOceanMonoComponent>().InitData(init_param);
 
         //保存成配置
@@ -95,7 +104,7 @@ public class RealTimeComputeComponent
         param.IFFTParam.Size = Resolution;
         param.IFFTParam.Length = Resolution * UnitSize;
         param.IFFTParam.ComputeShader = IFFTShader;
-
+        
         param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
     }
 

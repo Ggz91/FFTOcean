@@ -7,12 +7,21 @@ public class FFTOceanMonoComponent : MonoBehaviour
 {
     #region var
     [System.Serializable]
+    public struct MatParam
+    {
+        public float HorizonScale;
+        public float VerticalScale;
+    }
+
+    [System.Serializable]
     public class InitParam : ScriptableObject
     {
         [SerializeField]
         public SpectrumUtil.InitParam SpectrumParam;
         [SerializeField]
         public IFFTUtil.InitParam IFFTParam;
+        [SerializeField]
+        public MatParam OceanMatParam;
     };
 
     [SerializeField]
@@ -44,13 +53,19 @@ public class FFTOceanMonoComponent : MonoBehaviour
         m_ifft_util.InitData(InitParamData.IFFTParam);
         Debug.Log("[IFFTUtil] init done");
     }
-
+    void InitMat()
+    {
+        Material mat = GetComponent<MeshRenderer>().material;
+        float[] scales = {InitParamData.OceanMatParam.HorizonScale, InitParamData.OceanMatParam.VerticalScale, InitParamData.OceanMatParam.HorizonScale};
+        mat?.SetFloatArray(CommonData.OceanMatScaleName, scales);
+    }
     public void InitData(InitParam initParam)
     {
         InitParamData = initParam;
 
         InitSpectrum();
         InitIFFTUtil();
+        InitMat();
     }
 
     void Update()
@@ -62,15 +77,16 @@ public class FFTOceanMonoComponent : MonoBehaviour
         IFFTUpdate();
 
         //3、更新高度图到材质
-        UpdateMatHeightMap();
+        UpdateMatTexes();
     }
 
-    void UpdateMatHeightMap()
+    void UpdateMatTexes()
     {
         Material mat = GetComponent<MeshRenderer>().material;
         //CommonUtil.SaveRenderTextureToPNG(m_ifft_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatHeightTexName), m_ifft_util.ResHeightTex);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatDisplaceTexName), m_ifft_util.ResDisplaceTex);
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatNormalTexName), m_ifft_util.ResNormalTex);
     }
 
     void IFFTUpdate()
