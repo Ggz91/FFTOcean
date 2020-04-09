@@ -12,6 +12,8 @@ RWTexture2D<float4> DisplaceInputTex;
 RWTexture2D<float4> DisplaceOutputTex;
 RWTexture2D<float4> NormalInputTex;
 RWTexture2D<float4> NormalOutputTex;
+RWTexture2D<float4> JacobInputTex;
+RWTexture2D<float4> JacobOutputTex;
 RWTexture2D<float4> LutTex;
 //RWTexture2D<float4> DebugTex;
 
@@ -146,14 +148,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 normal_z_complex = CalSum(normal_self_com.zw, normal_pat_com.zw, weight_com, reverse);
     NormalOutputTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
 
+    //jacob尖浪判断,x y z w分别表示Dxx Dzz Dzx Dxz
+
     //最后的符号校正
-    if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
+    /*if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
         float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
         HeightInputTex[id.xy] *= neg;
         DisplaceOutputTex[id.xy] *= neg;
         NormalOutputTex[id.xy] *= neg;
-    }
+    }*/
 }
 
 [numthreads(8, 8,1)]

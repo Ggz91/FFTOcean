@@ -25,17 +25,17 @@ public class RealTimeComputeComponent
 
 
     [BoxGroup("Spectrum")]
-    public Vector2 Wind = new Vector2(16, 0);
+    public Vector2 Wind = new Vector2(4, 0);
 
     [BoxGroup("Spectrum")]
-    public float Amplitude = 0.2f;
+    public float Amplitude = 4f;
 
     [BoxGroup("IFFT")]
     public ComputeShader IFFTShader;
 
     [BoxGroup("Material")]
     [InfoBox("Scale.x表示x z方向的位移影响，Scale.y表示y方向的位移影响")]
-    public Vector2 Scale = new Vector2(0.2f, 1);
+    public Vector2 Scale = new Vector2(0.005f, 0.01f);
 
     [Button("Gen Ocean")]
     void GenOcean()

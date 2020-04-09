@@ -11,9 +11,10 @@ public class CommonData
     static public string IFFTComputeHeightOutputBufferName = "HeightOutputTex";
     static public string IFFTComputeDisplaceInputBufferName = "DisplaceInputTex";
     static public string IFFTComputeDisplaceOutputBufferName = "DisplaceOutputTex";
+    static public string IFFTComputeJacobInputBufferName = "JacobInputTex";
+    static public string IFFTComputeJacobOutputBufferName = "JacobOutputTex";
     static public string IFFTComputeNormalInputBufferName = "NormalInputTex";
     static public string IFFTComputeNormalOutputBufferName = "NormalOutputTex";
-    static public Vector2Int TexSize = new Vector2Int(1024, 1024);
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";
     static public string LutComputeKernelName = "CSMain";

@@ -51,6 +51,9 @@ public class IFFTUtil
     RenderTexture m_normal_ping_tex;
     RenderTexture m_normal_pong_tex;
     RenderTexture m_debug_tex;
+
+    RenderTexture m_jacob_ping_tex;
+    RenderTexture m_jacob_pong_tex;
     #endregion
 
     #region  method
@@ -76,9 +79,11 @@ public class IFFTUtil
         CloneRenderTexture(rt, ref m_height_ping_tex);
         CloneRenderTexture(rt, ref m_displace_ping_tex);
         CloneRenderTexture(rt, ref m_normal_ping_tex);
+        CloneRenderTexture(rt, ref m_jacob_ping_tex);
         m_height_ping_tex.name = "IFFTHeight";
         m_displace_ping_tex.name = "IFFTDisplace";
         m_normal_ping_tex.name = "IFFTNormal";
+        m_jacob_ping_tex.name = "IFFTJacob";
     }
     public void UpdateUI()
     {
@@ -119,11 +124,15 @@ public class IFFTUtil
         m_param.ComputeShader.Dispatch(m_post_kernel, m_param.Size / 8, m_param.Size / 8, 1);
         ResNormalTex = (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
     }
-    
+    void JacobPost()
+    {
+        //尖浪使用jacoba行列式进行判断
+    }
     void PostHandle()
     {
         //后处理的一些操作
         NormalPost();
+        JacobPost();
     }
 
     public void Begin()
@@ -163,10 +172,8 @@ public class IFFTUtil
         PostHandle();
         OnDone();
     }
-    void CalDisplace(int stage, bool reverse)
+    void CalDisplace(bool even, bool reverse)
     {
-        bool even = stage % 2 != 0;
-
         //设置ping pong坐标翻转操作
         if (!even)
         {
@@ -179,11 +186,22 @@ public class IFFTUtil
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
         }
     }
-
-    void CalNormal(int stage, bool reverse)
+    void CalJacob(bool even, bool reverse)
     {
-        bool even = stage % 2 != 0;
-
+        //设置ping pong坐标翻转操作
+        if (!even)
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobInputBufferName, reverse ? m_jacob_pong_tex : m_jacob_ping_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobOutputBufferName, reverse ? m_jacob_ping_tex : m_jacob_pong_tex);
+        }
+        else
+        {
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobInputBufferName, reverse ? m_jacob_ping_tex : m_jacob_pong_tex);
+            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobOutputBufferName, reverse ? m_jacob_pong_tex : m_jacob_ping_tex);
+        }
+    }
+    void CalNormal(bool even, bool reverse)
+    {
         //设置ping pong坐标翻转操作
         if (!even)
         {
@@ -197,10 +215,8 @@ public class IFFTUtil
         }
     }
 
-    void CalHeight(int stage, bool reverse = false)
+    void CalHeight(bool even, bool reverse = false)
     {
-        bool even = stage % 2 != 0;
-
         //设置ping pong坐标翻转操作
         if (!even)
         {
@@ -218,9 +234,12 @@ public class IFFTUtil
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, stage);
         int GroupSize = (int)Mathf.Pow(2, stage + 1);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
-        CalHeight(stage, reverse);
-        CalDisplace(stage, reverse);
-        CalNormal(stage, reverse);
+        bool even = stage % 2 != 0;
+        
+        CalHeight(even, reverse);
+        CalDisplace(even, reverse);
+        CalNormal(even, reverse);
+        //CalJacob(even, reverse);
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
@@ -256,6 +275,7 @@ public class IFFTUtil
         InitTex(ref m_height_pong_tex);
         InitTex(ref m_displace_pong_tex);
         InitTex(ref m_normal_pong_tex);
+        InitTex(ref m_jacob_pong_tex);
         /*#if _DEBUG_
                 InitTex(ref m_debug_tex);
                 m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
