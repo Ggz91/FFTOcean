@@ -116,11 +116,20 @@ public class IFFTUtil
         }
     }
     
+    void InitPingTex()
+    {
+        //设置ping pong buff
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightPingBufferName, m_height_ping_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplacePingBufferName, m_displace_ping_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalPingBufferName, m_normal_ping_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobPingBufferName, m_jacob_ping_tex);
+    }
+
     void NormalPost()
     {
         //梯度转normal
-        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalInputBufferName, ResNormalTex);
-        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalOutputBufferName, (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalPingBufferName, ResNormalTex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalPongBufferName, (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex);
         m_param.ComputeShader.Dispatch(m_post_kernel, m_param.Size / 8, m_param.Size / 8, 1);
         ResNormalTex = (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
     }
@@ -141,6 +150,7 @@ public class IFFTUtil
     }
     public void Update()
     {
+        InitPingTex();
         int i = 0;
         //计算行
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeCalLineName, 1);
@@ -172,74 +182,14 @@ public class IFFTUtil
         PostHandle();
         OnDone();
     }
-    void CalDisplace(bool even, bool reverse)
-    {
-        //设置ping pong坐标翻转操作
-        if (!even)
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceInputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_ping_tex : m_displace_pong_tex);
-        }
-        else
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceInputBufferName, reverse ? m_displace_ping_tex : m_displace_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplaceOutputBufferName, reverse ? m_displace_pong_tex : m_displace_ping_tex);
-        }
-    }
-    void CalJacob(bool even, bool reverse)
-    {
-        //设置ping pong坐标翻转操作
-        if (!even)
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobInputBufferName, reverse ? m_jacob_pong_tex : m_jacob_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobOutputBufferName, reverse ? m_jacob_ping_tex : m_jacob_pong_tex);
-        }
-        else
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobInputBufferName, reverse ? m_jacob_ping_tex : m_jacob_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobOutputBufferName, reverse ? m_jacob_pong_tex : m_jacob_ping_tex);
-        }
-    }
-    void CalNormal(bool even, bool reverse)
-    {
-        //设置ping pong坐标翻转操作
-        if (!even)
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalInputBufferName, reverse ? m_normal_pong_tex : m_normal_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalOutputBufferName, reverse ? m_normal_ping_tex : m_normal_pong_tex);
-        }
-        else
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalInputBufferName, reverse ? m_normal_ping_tex : m_normal_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalOutputBufferName, reverse ? m_normal_pong_tex : m_normal_ping_tex);
-        }
-    }
 
-    void CalHeight(bool even, bool reverse = false)
-    {
-        //设置ping pong坐标翻转操作
-        if (!even)
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightInputBufferName, reverse ? m_height_pong_tex : m_height_ping_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightOutputBufferName, reverse ? m_height_ping_tex : m_height_pong_tex);
-        }
-        else
-        {
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightInputBufferName, reverse ? m_height_ping_tex : m_height_pong_tex);
-            m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightOutputBufferName, reverse ? m_height_pong_tex : m_height_ping_tex);
-        }
-    }
     void CalStageOutput(int stage, bool reverse = false)
     {
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageName, stage);
         int GroupSize = (int)Mathf.Pow(2, stage + 1);
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStageGroupName, GroupSize);
         bool even = stage % 2 != 0;
-        
-        CalHeight(even, reverse);
-        CalDisplace(even, reverse);
-        CalNormal(even, reverse);
-        //CalJacob(even, reverse);
+        m_param.ComputeShader.SetInt(CommonData.IFFTComputeStagePingName, !even ? (reverse ? 0 : 1) : (reverse ? 1 : 0));
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
@@ -280,6 +230,10 @@ public class IFFTUtil
                 InitTex(ref m_debug_tex);
                 m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
         #endif*/
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightPongBufferName, m_height_pong_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplacePongBufferName, m_displace_pong_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalPongBufferName, m_normal_pong_tex);
+        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobPongBufferName, m_jacob_pong_tex);
     }
 
     public void Leave()

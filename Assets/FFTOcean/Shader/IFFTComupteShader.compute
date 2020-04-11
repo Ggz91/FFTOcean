@@ -6,15 +6,16 @@
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
-RWTexture2D<float4> HeightInputTex;
-RWTexture2D<float4> HeightOutputTex;
-RWTexture2D<float4> DisplaceInputTex;
-RWTexture2D<float4> DisplaceOutputTex;
-RWTexture2D<float4> NormalInputTex;
-RWTexture2D<float4> NormalOutputTex;
-RWTexture2D<float4> JacobInputTex;
-RWTexture2D<float4> JacobOutputTex;
+RWTexture2D<float4> HeightPingTex;
+RWTexture2D<float4> HeightPongTex;
+RWTexture2D<float4> DisplacePingTex;
+RWTexture2D<float4> DisplacePongTex;
+RWTexture2D<float4> NormalPingTex;
+RWTexture2D<float4> NormalPongTex;
+RWTexture2D<float4> JacobPingTex;
+RWTexture2D<float4> JacobPongTex;
 RWTexture2D<float4> LutTex;
+int Ping;
 //RWTexture2D<float4> DebugTex;
 
 uint GroupSize;
@@ -45,13 +46,13 @@ float2 CalDisplaceKModule(float2 k, float2 input)
     return res;
 }
 
-float4 CalNormalModule(float2 k, float2 input)
+float4 CalNormalModule(float2 k, float4 input)
 {
     //取实部作为对应的值
     float4 res;
-    res.x = -1 * (k.x * input.y);
+    res.x = -1 * (k.x * input.z);
     res.y = k.x * input.x;
-    res.z = -1 * (k.y * input.y);
+    res.z = -1 * (k.y * input.z);
     res.w = k.y * input.x;
     return res;
 }
@@ -68,7 +69,7 @@ float4 CalSum(float2 self, float2 pat, float2 weight, float reverse)
 
 float3 NormalizeVector(float3 normal)
 {
-    float length = CalMagnitude(normal);
+    float length = CalMagnitudeVec3(normal);
     return normal / length;
 }
 
@@ -82,6 +83,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 weight = LutTex[cor];
     int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
     uint2 real_index = id.xy;
+
     if(1 == ComputeLine)
     {
         real_index.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
@@ -94,12 +96,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         pat_cor.x = id.x;
         pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : (id.y + reverse * (int)GroupSize/2);
     }
-    float4 self_input = HeightInputTex[real_index];
-    float4 pat_input = HeightInputTex[pat_cor];
-    float4 self_displace_input = DisplaceInputTex[real_index];
-    float4 pat_displace_input = DisplaceInputTex[pat_cor];
-    float4 self_normal_input = NormalInputTex[real_index];
-    float4 pat_normal_input = NormalInputTex[pat_cor];
+
+    float4 self_input = (1 == Ping) ? HeightPingTex[real_index] : HeightPongTex[real_index];
+    float4 pat_input = (1 == Ping) ? HeightPingTex[pat_cor] : HeightPongTex[pat_cor];
+    float4 self_displace_input = (1 == Ping) ? DisplacePingTex[real_index] : DisplacePongTex[real_index];
+    float4 pat_displace_input = (1 == Ping) ? DisplacePingTex[pat_cor] : DisplacePongTex[pat_cor];
+    float4 self_normal_input = (1 == Ping) ? NormalPingTex[real_index] : NormalPongTex[real_index];
+    float4 pat_normal_input = (1 == Ping) ? NormalPingTex[pat_cor] : NormalPongTex[pat_cor];
+    
     //符号校正
     if(1 == ComputeLine && 0 == Stage)
     {
@@ -126,12 +130,18 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         pat_normal_input *= neg;
     }
 
-
     //高度图计算
     float2 weight_com = float2(weight.x, weight.z);
     float2 pat_com = float2(pat_input.x, pat_input.z);
     float2 self_com = float2(self_input.x, self_input.z);
-    HeightOutputTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
+    if(1 == Ping)
+    {
+        HeightPongTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
+    }
+    else
+    {
+        HeightPingTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
+    }
    
     //displace计算
     float2 k_cor = float2(2.0f * PI * ((int)id.x - (int)Size/2)/Length, 2.0f * PI * ((int)id.y - (int)Size/2)/Length);
@@ -139,31 +149,45 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float2 pat_displace_input_com = float2(pat_displace_input.x, pat_displace_input.z);
     float2 displace_self_com = 0 == Stage ? CalDisplaceKModule(k_cor, self_displace_input_com) : self_displace_input_com;
     float2 displace_pat_com = 0 == Stage ? CalDisplaceKModule(k_cor, pat_displace_input_com) : pat_displace_input_com;
-    DisplaceOutputTex[id.xy] = CalSum(displace_self_com, displace_pat_com, weight_com, reverse);    
+    if(1 == Ping)
+    {
+        DisplacePongTex[id.xy] = CalSum(displace_self_com, displace_pat_com, weight_com, reverse);    
+    }
+    else
+    {
+        DisplacePingTex[id.xy] = CalSum(displace_self_com, displace_pat_com, weight_com, reverse);    
+    }
 
     //normal计算,这里的complex中 xy表示x方向的complex，zw表示z方向的complex
     float4 normal_self_com = 0 == Stage ? CalNormalModule(k_cor, self_normal_input) : self_normal_input;
     float4 normal_pat_com = 0 == Stage ? CalNormalModule(k_cor, pat_normal_input) : pat_normal_input;  
     float4 normal_x_complex = CalSum(normal_self_com.xy, normal_pat_com.xy, weight_com, reverse);
     float4 normal_z_complex = CalSum(normal_self_com.zw, normal_pat_com.zw, weight_com, reverse);
-    NormalOutputTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+    if(1 == Ping)
+    {
+        NormalPongTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+    }
+    else
+    {
+        NormalPingTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+    }
 
     //jacob尖浪判断,x y z w分别表示Dxx Dzz Dzx Dxz
 
     //最后的符号校正
-    /*if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
+    if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
         float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
-        HeightInputTex[id.xy] *= neg;
-        DisplaceOutputTex[id.xy] *= neg;
-        NormalOutputTex[id.xy] *= neg;
-    }*/
+        HeightPingTex[id.xy] *= neg;
+        DisplacePongTex[id.xy] *= neg;
+        NormalPongTex[id.xy] *= neg;
+    }
 }
 
 [numthreads(8, 8,1)]
 void PostKernel (uint3 id : SV_DispatchThreadID)
 {
-    float3 normal = float3(0, 1, 0) - float3(NormalInputTex[id.xy].x, 0, NormalInputTex[id.xy].z);
+    float3 normal = float3(0, 1, 0) - float3(NormalPingTex[id.xy].x, 0, NormalPingTex[id.xy].z);
     normal = NormalizeVector(normal);
-    NormalOutputTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
+    NormalPongTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
 }

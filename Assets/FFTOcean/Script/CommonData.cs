@@ -7,16 +7,17 @@ public class CommonData
 {
     static public string IFFTComputeKernelName = "CSMain";
     static public string IFFTPostKernelName = "PostKernel";
-    static public string IFFTComputeHeightInputBufferName = "HeightInputTex";
-    static public string IFFTComputeHeightOutputBufferName = "HeightOutputTex";
-    static public string IFFTComputeDisplaceInputBufferName = "DisplaceInputTex";
-    static public string IFFTComputeDisplaceOutputBufferName = "DisplaceOutputTex";
-    static public string IFFTComputeJacobInputBufferName = "JacobInputTex";
-    static public string IFFTComputeJacobOutputBufferName = "JacobOutputTex";
-    static public string IFFTComputeNormalInputBufferName = "NormalInputTex";
-    static public string IFFTComputeNormalOutputBufferName = "NormalOutputTex";
+    static public string IFFTComputeHeightPingBufferName = "HeightPingTex";
+    static public string IFFTComputeHeightPongBufferName = "HeightPongTex";
+    static public string IFFTComputeDisplacePingBufferName = "DisplacePingTex";
+    static public string IFFTComputeDisplacePongBufferName = "DisplacePongTex";
+    static public string IFFTComputeJacobPingBufferName = "JacobPingTex";
+    static public string IFFTComputeJacobPongBufferName = "JacobPongTex";
+    static public string IFFTComputeNormalPingBufferName = "NormalPingTex";
+    static public string IFFTComputeNormalPongBufferName = "NormalPongTex";
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";
+    static public string IFFTComputeStagePingName = "Ping";
     static public string LutComputeKernelName = "CSMain";
     static public string LutComputeBufferName = "LutTex";
     static public string LutComputeSizeName = "Size";
