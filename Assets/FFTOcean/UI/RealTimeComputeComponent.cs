@@ -106,6 +106,7 @@ public class RealTimeComputeComponent
         param.IFFTParam.ComputeShader = IFFTShader;
         
         param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
+        param.IFFTParam.JacobScale = Scale.x;
     }
 
     Mesh GenMeshImp()
