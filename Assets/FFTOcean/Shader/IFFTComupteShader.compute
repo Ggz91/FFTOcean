@@ -1,6 +1,7 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 #pragma kernel PostKernel
+#pragma kernel JacobKernel
 
 # include "MathUtil.hlsl"
 
@@ -127,10 +128,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float4 pat_displace_input = (1 == Ping) ? DisplacePingTex[pat_cor] : DisplacePongTex[pat_cor];
     float4 self_normal_input = (1 == Ping) ? NormalPingTex[real_index] : NormalPongTex[real_index];
     float4 pat_normal_input = (1 == Ping) ? NormalPingTex[pat_cor] : NormalPongTex[pat_cor];
-    float4 self_Jacob_DxxDzz_input = (1 == Ping) ? JacobPingDxxDzzTex[real_index] : JacobPongDxxDzzTex[real_index];
-    float4 pat_Jacbo_DxxDzz_input = (1 == Ping) ? JacobPingDxxDzzTex[pat_cor] : JacobPongDxxDzzTex[pat_cor];
-    float4 self_Jacob_DxzDzx_input = (1 == Ping) ? JacobPingDxzDzxTex[real_index] : JacobPongDxzDzxTex[real_index];
-    float4 pat_Jacob_DxzDzx_input = (1 == Ping) ? JacobPingDxzDzxTex[pat_cor] : JacobPongDxzDzxTex[pat_cor];
+   
     //符号校正
     if(1 == ComputeLine && 0 == Stage)
     {
@@ -138,15 +136,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         self_input *= neg;
         self_displace_input *= neg;
         self_normal_input *= neg;
-        self_Jacob_DxxDzz_input *= neg;
-        self_Jacob_DxzDzx_input *= neg;
 
         neg = pat_cor.x % 2 == 0 ? 1 : - 1;
         pat_input *= neg;
         pat_displace_input *= neg;
         pat_normal_input *= neg;
-        pat_Jacbo_DxxDzz_input *= neg;
-        pat_Jacob_DxzDzx_input *= neg;
     }
     else if(0 == ComputeLine && 0 == Stage)
     {
@@ -154,15 +148,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         self_input *= neg;
         self_displace_input *= neg;
         self_normal_input *= neg;
-        self_Jacob_DxxDzz_input *= neg; 
-        self_Jacob_DxzDzx_input *= neg;
 
         neg = CalSymbol(pat_cor.xy);
         pat_input *= neg;
         pat_displace_input *= neg;
         pat_normal_input *= neg;
-        pat_Jacbo_DxxDzz_input *= neg;
-        pat_Jacob_DxzDzx_input *= neg;
     }
     //高度图计算
     float2 weight_com = float2(weight.x, weight.z);
@@ -204,23 +194,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         NormalPingTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
     }
-    //jacob尖浪判断,分别表示Dxx Dzz存在一个JacobDxxDzzPing/PongBuff里， Dxz Dzx存在JacobDxzDzxPing/PongBuff里
-    float4 Jacob_DxxDzz_self_com = 0 == Stage ? CalJacobDxxDzz(k_cor, self_Jacob_DxxDzz_input) : self_Jacob_DxxDzz_input;
-    float4 Jacob_DxxDzz_pat_com =  0 == Stage ? CalJacobDxxDzz(pat_k_cor, pat_Jacbo_DxxDzz_input) : pat_Jacbo_DxxDzz_input;
-    float4 Jacob_DxzDzx_self_com = 0 == Stage ? CalJacobDxzDzx(k_cor, self_Jacob_DxzDzx_input) : self_Jacob_DxzDzx_input;
-    float4 Jacob_DxzDzx_pat_com = 0 == Stage ? CalJacobDxzDzx(pat_k_cor, pat_Jacob_DxzDzx_input) : pat_Jacob_DxzDzx_input;
-    float4 Jacob_DxxDzz_com = Cal2Sum(Jacob_DxxDzz_self_com, Jacob_DxxDzz_pat_com, weight, reverse);
-    float4 Jacob_DxzDzx_com = Cal2Sum(Jacob_DxzDzx_self_com, Jacob_DxzDzx_pat_com, weight, reverse);
-    if(1 == Ping)
-    {
-        JacobPongDxxDzzTex[id.xy] = Jacob_DxxDzz_com;
-        JacobPongDxzDzxTex[id.xy] = Jacob_DxzDzx_com;
-    }
-    else
-    {
-        JacobPingDxxDzzTex[id.xy] = Jacob_DxxDzz_com;
-        JacobPingDxzDzxTex[id.xy] = Jacob_DxzDzx_com;
-    }
+   
     //最后的符号校正
     if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
@@ -228,10 +202,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         HeightPingTex[id.xy] *= neg;
         DisplacePongTex[id.xy] *= neg;
         NormalPongTex[id.xy] *= neg;
-        JacobPingDxxDzzTex[id.xy] *= neg;
-        JacobPingDxzDzxTex[id.xy] *= neg;
-        JacobPongDxxDzzTex[id.xy] *= neg;
-        JacobPongDxzDzxTex[id.xy] *= neg;
     }
 }
 [numthreads(8,8,1)]
@@ -251,4 +221,79 @@ void PostKernel (uint3 id : SV_DispatchThreadID)
     float2 Jzx = Jxz;
     float jacob = Jxx * Jxz - Jxz * Jzx;
     JacobResTex[id.xy] = 0 >= jacob ? float4(1, 1, 1, 1) : float4(0, 0, 0, 0);
+}
+[numthreads(8, 8, 1)]
+void JacobKernel(uint3 id : SV_DispatchThreadID)
+{
+    uint2 cor = id.xy;
+    cor.y = Stage;
+    cor.x = 1 == ComputeLine ? id.x : id.y;
+    uint2 pat_cor;
+    float4 weight = LutTex[cor];
+    int reverse = (cor.x % GroupSize) >= (GroupSize / 2) ? -1 : 1;
+    uint2 real_index = id.xy;
+    if(1 == ComputeLine)
+    {
+        real_index.x = (0 == Stage) ? CalBitReverse(id.x, TotalStageCount) : id.x;
+        pat_cor.x = (0 == Stage) ? CalBitReverse(id.x + reverse, TotalStageCount) : (id.x + reverse * (int)GroupSize/2);
+        pat_cor.y = id.y;
+    }
+    else
+    {
+        real_index.y = (0 == Stage) ? CalBitReverse(id.y, TotalStageCount) : id.y;
+        pat_cor.x = id.x;
+        pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : (id.y + reverse * (int)GroupSize/2);
+    }
+    float2 k_cor = float2(2.0f * PI * ((int)id.x - (int)Size/2)/Length, 2.0f * PI * ((int)id.y - (int)Size/2)/Length);
+    float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.x - (int)Size/2)/Length);
+    float4 self_Jacob_DxxDzz_input = (1 == Ping) ? JacobPingDxxDzzTex[real_index] : JacobPongDxxDzzTex[real_index];
+    float4 pat_Jacbo_DxxDzz_input = (1 == Ping) ? JacobPingDxxDzzTex[pat_cor] : JacobPongDxxDzzTex[pat_cor];
+    float4 self_Jacob_DxzDzx_input = (1 == Ping) ? JacobPingDxzDzxTex[real_index] : JacobPongDxzDzxTex[real_index];
+    float4 pat_Jacob_DxzDzx_input = (1 == Ping) ? JacobPingDxzDzxTex[pat_cor] : JacobPongDxzDzxTex[pat_cor];
+     //符号校正
+    if(1 == ComputeLine && 0 == Stage)
+    {
+        float neg = cor.x % 2 == 0 ? 1 : -1;
+        self_Jacob_DxxDzz_input *= neg;
+        self_Jacob_DxzDzx_input *= neg;
+
+        neg = pat_cor.x % 2 == 0 ? 1 : - 1;
+        pat_Jacbo_DxxDzz_input *= neg;
+        pat_Jacob_DxzDzx_input *= neg;
+    }
+    else if(0 == ComputeLine && 0 == Stage)
+    {
+        float neg = CalSymbol(cor.xy);
+        self_Jacob_DxxDzz_input *= neg; 
+        self_Jacob_DxzDzx_input *= neg;
+
+        neg = CalSymbol(pat_cor.xy);
+        pat_Jacbo_DxxDzz_input *= neg;
+        pat_Jacob_DxzDzx_input *= neg;
+    }
+    //jacob尖浪判断,分别表示Dxx Dzz存在一个JacobDxxDzzPing/PongBuff里， Dxz Dzx存在JacobDxzDzxPing/PongBuff里
+    float4 Jacob_DxxDzz_self_com = 0 == Stage ? CalJacobDxxDzz(k_cor, self_Jacob_DxxDzz_input) : self_Jacob_DxxDzz_input;
+    float4 Jacob_DxxDzz_pat_com =  0 == Stage ? CalJacobDxxDzz(pat_k_cor, pat_Jacbo_DxxDzz_input) : pat_Jacbo_DxxDzz_input;
+    float4 Jacob_DxzDzx_self_com = 0 == Stage ? CalJacobDxzDzx(k_cor, self_Jacob_DxzDzx_input) : self_Jacob_DxzDzx_input;
+    float4 Jacob_DxzDzx_pat_com = 0 == Stage ? CalJacobDxzDzx(pat_k_cor, pat_Jacob_DxzDzx_input) : pat_Jacob_DxzDzx_input;
+    float4 Jacob_DxxDzz_com = Cal2Sum(Jacob_DxxDzz_self_com, Jacob_DxxDzz_pat_com, weight, reverse);
+    float4 Jacob_DxzDzx_com = Cal2Sum(Jacob_DxzDzx_self_com, Jacob_DxzDzx_pat_com, weight, reverse);
+    if(1 == Ping)
+    {
+        JacobPongDxxDzzTex[id.xy] = Jacob_DxxDzz_com;
+        JacobPongDxzDzxTex[id.xy] = Jacob_DxzDzx_com;
+    }
+    else
+    {
+        JacobPingDxxDzzTex[id.xy] = Jacob_DxxDzz_com;
+        JacobPingDxzDzxTex[id.xy] = Jacob_DxzDzx_com;
+    }
+    if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
+    {
+        float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
+        JacobPingDxxDzzTex[id.xy] *= neg;
+        JacobPingDxzDzxTex[id.xy] *= neg;
+        JacobPongDxxDzzTex[id.xy] *= neg;
+        JacobPongDxzDzxTex[id.xy] *= neg;
+    }
 }

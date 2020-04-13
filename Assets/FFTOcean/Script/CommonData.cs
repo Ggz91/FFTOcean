@@ -7,12 +7,15 @@ public class CommonData
 {
     static public string IFFTComputeKernelName = "CSMain";
     static public string IFFTPostKernelName = "PostKernel";
+    static public string IFFTJacobKernelName = "JacobKernel";
     static public string IFFTComputeHeightPingBufferName = "HeightPingTex";
     static public string IFFTComputeHeightPongBufferName = "HeightPongTex";
     static public string IFFTComputeDisplacePingBufferName = "DisplacePingTex";
     static public string IFFTComputeDisplacePongBufferName = "DisplacePongTex";
     static public string IFFTComputeJacobPingDxxDzzBufferName = "JacobPingDxxDzzTex";
     static public string IFFTComputeJacobPingDxzDzxBufferName = "JacobPingDxzDzxTex";
+    static public string IFFTComputeJacobPongDxxDzzBufferName = "JacobPongDxxDzzTex";
+    static public string IFFTComputeJacobPongDxzDzxBufferName = "JacobPongDxzDzxTex";
     static public string IFFTComputeJacobResBufferName = "JacobResTex";
     static public string IFFTComputeNormalPingBufferName = "NormalPingTex";
     static public string IFFTComputeNormalPongBufferName = "NormalPongTex";

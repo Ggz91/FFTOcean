@@ -23,6 +23,7 @@ MonoBehaviour:
     Size: 64
     Length: 32
     BufferFlyLutTex: {fileID: 8400000, guid: 3183ac621a80a734b98d482bb8042b32, type: 2}
+    JacobScale: 0.005
   OceanMatParam:
     HorizonScale: 0.005
     VerticalScale: 0.01

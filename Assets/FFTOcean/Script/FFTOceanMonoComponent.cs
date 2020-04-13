@@ -55,7 +55,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     }
     void InitMat()
     {
-        Material mat = GetComponent<MeshRenderer>().material;
+        Material mat = GetComponent<MeshRenderer>().sharedMaterial;
         float[] scales = {InitParamData.OceanMatParam.HorizonScale, InitParamData.OceanMatParam.VerticalScale, InitParamData.OceanMatParam.HorizonScale};
         mat?.SetFloatArray(CommonData.OceanMatScaleName, scales);
     }
@@ -82,7 +82,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
 
     void UpdateMatTexes()
     {
-        Material mat = GetComponent<MeshRenderer>().material;
+        Material mat = GetComponent<MeshRenderer>().sharedMaterial;
         //CommonUtil.SaveRenderTextureToPNG(m_ifft_util.ResTex, UICommonData.IFFTOceanHeightMapPath);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatHeightTexName), m_ifft_util.ResHeightTex);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatDisplaceTexName), m_ifft_util.ResDisplaceTex);

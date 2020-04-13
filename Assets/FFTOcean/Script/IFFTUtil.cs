@@ -51,6 +51,7 @@ public class IFFTUtil
 
     int m_kernel;
     int m_post_kernel;
+    int m_jacob_kernel;
     RenderTexture m_height_ping_tex;
     RenderTexture m_height_pong_tex;
     RenderTexture m_displace_ping_tex;
@@ -61,6 +62,9 @@ public class IFFTUtil
 
     RenderTexture m_jacob_DxxDzz_ping_tex;
     RenderTexture m_jacob_DxzDzx_ping_tex;
+    RenderTexture m_jacob_DxxDzz_pong_tex;
+    RenderTexture m_jacob_DxzDzx_pong_tex;
+
     RenderTexture m_jacob_Res_tex;
     #endregion
 
@@ -119,11 +123,14 @@ public class IFFTUtil
     {
         m_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTComputeKernelName);
         m_post_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTPostKernelName);
+        m_jacob_kernel = m_param.ComputeShader.FindKernel(CommonData.IFFTJacobKernelName);
+
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeSizeName, m_param.Size);
         m_param.ComputeShader.SetFloat(CommonData.IFFTComputeLenghtName, m_param.Length);
         if (null != m_param.BufferFlyLutTex)
         {
             m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
+            m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTLutTexName, m_param.BufferFlyLutTex);
         }
         m_param.ComputeShader.SetFloat(CommonData.IFFTComputeJacobScaleName, m_param.JacobScale);
     }
@@ -134,18 +141,24 @@ public class IFFTUtil
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightPingBufferName, m_height_ping_tex);
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplacePingBufferName, m_displace_ping_tex);
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalPingBufferName, m_normal_ping_tex);
-        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobPingDxzDzxBufferName, m_jacob_DxxDzz_ping_tex);
-        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobPingDxxDzzBufferName, m_jacob_DxzDzx_ping_tex);
+        m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTComputeJacobPingDxzDzxBufferName, m_jacob_DxxDzz_ping_tex);
+        m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTComputeJacobPingDxxDzzBufferName, m_jacob_DxzDzx_ping_tex);
     }
 
     void NormalPost()
     {
         //梯度转normal
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalPingBufferName, m_normal_ping_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeNormalPongBufferName, m_normal_pong_tex);
         ResNormalTex = (ResNormalTex == m_normal_ping_tex) ? m_normal_pong_tex : m_normal_ping_tex;
     }
     void JacobPost()
     {
         //尖浪使用jacoba行列式进行判断
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeJacobPingDxxDzzBufferName, m_jacob_DxxDzz_ping_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeJacobPingDxzDzxBufferName, m_jacob_DxzDzx_ping_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeJacobPongDxxDzzBufferName, m_jacob_DxxDzz_pong_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeJacobPongDxzDzxBufferName, m_jacob_DxzDzx_pong_tex);
     }
     void PostHandle(bool ping)
     {
@@ -204,6 +217,7 @@ public class IFFTUtil
         bool even = stage % 2 != 0;
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStagePingName, !even ? (reverse ? 0 : 1) : (reverse ? 1 : 0));
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
+        m_param.ComputeShader.Dispatch(m_jacob_kernel, m_param.Size / 8, m_param.Size / 8, 1);
     }
 
     void OnDone()
@@ -239,6 +253,8 @@ public class IFFTUtil
         InitTex(ref m_displace_pong_tex);
         InitTex(ref m_normal_pong_tex);
         InitTex(ref m_jacob_Res_tex);
+        InitTex(ref m_jacob_DxxDzz_pong_tex);
+        InitTex(ref m_jacob_DxzDzx_pong_tex);
         /*#if _DEBUG_
                 InitTex(ref m_debug_tex);
                 m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
@@ -246,7 +262,9 @@ public class IFFTUtil
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightPongBufferName, m_height_pong_tex);
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplacePongBufferName, m_displace_pong_tex);
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeNormalPongBufferName, m_normal_pong_tex);
-        m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeJacobResBufferName, m_jacob_Res_tex);
+        m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTComputeJacobResBufferName, m_jacob_Res_tex);
+        m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTComputeJacobPongDxxDzzBufferName, m_jacob_DxxDzz_pong_tex);
+        m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTComputeJacobPongDxzDzxBufferName, m_jacob_DxzDzx_pong_tex);
     }
 
     public void Leave()
