@@ -43,10 +43,11 @@ public class CommonData
     static public string OceanMatHeightTexName = "_OceanHeightMap";
     static public string OceanMatDisplaceTexName = "_OceanDisplaceMap";
     static public string OceanMatNormalTexName = "_OceanNormalMap";
+    static public string OceanMatJacobTexName = "_OceanJacobMap";
     static public string OceanMatScaleName = "_OceanScale";
-    /*#if _DEBUG_
+    #if _DEBUG_
         static public string IFFTDebugTexName = "DebugTex";
-    #endif*/
+    #endif
     static public string SpecturmDebugTexName = "DebugTex";
 
 }

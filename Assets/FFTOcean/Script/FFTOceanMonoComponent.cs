@@ -87,6 +87,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatHeightTexName), m_ifft_util.ResHeightTex);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatDisplaceTexName), m_ifft_util.ResDisplaceTex);
         mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatNormalTexName), m_ifft_util.ResNormalTex);
+        mat?.SetTexture(Shader.PropertyToID(CommonData.OceanMatJacobTexName), m_ifft_util.ResJacobTex);
     }
 
     void IFFTUpdate()
