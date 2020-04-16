@@ -51,8 +51,8 @@
                 float3 displace = tex2Dlod(_OceanDisplaceMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
                 real_pos.y += height * _OceanScale[1];
-                //real_pos.x += displace.x * _OceanScale[0];
-                //real_pos.z += displace.z * _OceanScale[2];
+                real_pos.x += displace.x * _OceanScale[0];
+                real_pos.z += displace.z * _OceanScale[2];
                 o.vertex = UnityObjectToClipPos(real_pos);
 
                 //尖浪相关
@@ -69,19 +69,19 @@
                 //尖浪直接返回
                 if(i.color.r > 0.9f )
                 {
-                    return i.color;
+                    //return i.color;
                 }
                 float4 normal = float4(1, 1, 1, 1);
-                normal.xyz = tex2D(_OceanNormalMap, i.uv);
+                normal.xyz = normalize(tex2D(_OceanNormalMap, i.uv).rgb);
                 //计算光照影响
                 //反射光
                 float4 res = _WaterColor;
-                float rel_factor = saturate(dot(_WorldSpaceLightPos0.xyz, normal.xyz));
+                float rel_factor = saturate(dot(normalize(_WorldSpaceLightPos0.xyz), normal.xyz));
                 float4 relfection = rel_factor * _LightColor0 * _WaterColor;
                 res.rgb += relfection.rgb;
                 //高光
                 float3 view_dir = _WorldSpaceCameraPos.xyz - i.world_pos;
-                float4 half_reflect = float4(normalize(view_dir - _WorldSpaceLightPos0), 1);
+                float4 half_reflect = float4(normalize(view_dir + _WorldSpaceLightPos0), 1);
                 float spe_factor = saturate(dot(half_reflect, normal));
                 float4 specture = 0.1 * pow(spe_factor, _Gloss) * _LightColor0;
                 res.rgb += specture.rgb;

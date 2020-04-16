@@ -18,6 +18,8 @@ RWTexture2D<float4> DebugTex;
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    SpectrumTex[id.xy] = float4(id.x * 2, 0, 0, 1);
+    return;
     float2 wind_dir;
     wind_dir.x = WindDir[0];
     wind_dir.y = WindDir[1];

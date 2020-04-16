@@ -47,10 +47,10 @@ float4 CalDisplaceKModule(float2 k, float4 input)
     }
     float2 module = k / k_mag;
     float4 res;
-    res.x = module.x * input.y; 
-    res.y = -1 * module.x * input.z;
-    res.z = module.y * input.y;
-    res.w = -1 * module.y * input.z;
+    res.x = module.x * input.z; 
+    res.y = -1 * module.x * input.x;
+    res.z = module.y * input.z;
+    res.w = -1 * module.y * input.x;
     return res;
 }
 
@@ -169,7 +169,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         HeightPingTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
     }
-    DebugTex[id.xy] = float4(self_input.x * 1.0f / 8, 0, 0, 1);
+    DebugTex[id.xy] = float4(self_input.x, 0, self_input.y,1);
+
     //displace计算
     float2 k_cor = float2(2.0f * PI * ((int)real_index.x - (int)Size/2)/Length, 2.0f * PI * ((int)real_index.y - (int)Size/2)/Length);
     float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.x - (int)Size/2)/Length);
@@ -180,11 +181,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(1 == Ping)
     {
         DisplacePongTex[id.xy] = float4(displace_x_complex.x, displace_x_complex.z, displace_z_complex.x, displace_z_complex.z);    
+        //DebugTex[id.xy] = float4(DisplacePongTex[id.xy].x, 0, DisplacePongTex[id.xy].y, 1);
     }
     else
     {
         DisplacePingTex[id.xy] = float4(displace_x_complex.x, displace_x_complex.z, displace_z_complex.x, displace_z_complex.z);   
+        //DebugTex[id.xy] = float4(DisplacePingTex[id.xy].x, 0, DisplacePingTex[id.xy].y, 1);
     }
+
     //normal计算,这里的complex中 xy表示x方向的complex，zw表示z方向的complex
     float4 normal_self_com = (0 == Stage && 1 == ComputeLine )? CalNormalModule(k_cor, self_normal_input) : self_normal_input;
     float4 normal_pat_com = (0 == Stage && 1 == ComputeLine )? CalNormalModule(pat_k_cor, pat_normal_input) : pat_normal_input;  
@@ -193,16 +197,17 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(1 == Ping)
     {
         NormalPongTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+        //DebugTex[id.xy] = float4(NormalPongTex[id.xy].x, 0, NormalPongTex[id.xy].y, 1);
     }
     else
     {
         NormalPingTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
+        //DebugTex[id.xy] = float4(NormalPingTex[id.xy].x, 0, NormalPingTex[id.xy].y, 1);
     }
-   
     //最后的符号校正
     if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
-        float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
+        float neg = (((int)real_index.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
         if(1 == Ping)
         {
             HeightPongTex[id.xy] *= neg;
@@ -226,7 +231,14 @@ void PostKernel (uint3 id : SV_DispatchThreadID)
     float3 grad = 1 == Ping ? float3(NormalPingTex[id.xy].x, 0, NormalPingTex[id.xy].z) : float3(NormalPongTex[id.xy].x, 0, NormalPongTex[id.xy].z);
     float3 normal = float3(0, 1, 0) - grad;
     normal = NormalizeVector(normal);
-    NormalPongTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
+    if(1 == Ping)
+    {
+        NormalPongTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
+    }
+    else
+    {
+        NormalPongTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
+    }
     //jacob post
     float4 JacobDxxDzzInput = 1== Ping ? JacobPingDxxDzzTex[id.xy] : JacobPongDxxDzzTex[id.xy];
     float4 JacobDxzDzxInput = 1== Ping ? JacobPingDxzDzxTex[id.xy] : JacobPongDxzDzxTex[id.xy];

@@ -57,7 +57,7 @@ public class SpectrumUtil
         rt.format = RenderTextureFormat.ARGBFloat;
         rt.enableRandomWrite = true;
         rt.wrapMode = TextureWrapMode.Repeat;
-        rt.filterMode = FilterMode.Trilinear;
+        rt.filterMode = FilterMode.Point;
         rt.Create();
     }
     void InitComputeShaderStaticData()
