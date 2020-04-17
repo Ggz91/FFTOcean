@@ -192,7 +192,7 @@ public class IFFTUtil
         {
             CalStageOutput(i);
         }
-      
+
         //重新对齐一下输入
         bool even = i % 2 != 0;
         //计算列

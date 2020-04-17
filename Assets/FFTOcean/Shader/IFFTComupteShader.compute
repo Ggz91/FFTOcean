@@ -125,13 +125,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         pat_cor.x = id.x;
         pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : (id.y + reverse * (int)GroupSize/2);
     }
+
     float4 self_input = (1 == Ping) ? HeightPingTex[real_index] : HeightPongTex[real_index];
     float4 pat_input = (1 == Ping) ? HeightPingTex[pat_cor] : HeightPongTex[pat_cor];
     float4 self_displace_input = (1 == Ping) ? DisplacePingTex[real_index] : DisplacePongTex[real_index];
     float4 pat_displace_input = (1 == Ping) ? DisplacePingTex[pat_cor] : DisplacePongTex[pat_cor];
     float4 self_normal_input = (1 == Ping) ? NormalPingTex[real_index] : NormalPongTex[real_index];
     float4 pat_normal_input = (1 == Ping) ? NormalPingTex[pat_cor] : NormalPongTex[pat_cor];
-   
+    
     //符号校正
     if(1 == ComputeLine && 0 == Stage)
     {
@@ -169,10 +170,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         HeightPingTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
     }
-  
     //displace计算
     float2 k_cor = float2(2.0f * PI * ((int)real_index.x - (int)Size/2)/Length, 2.0f * PI * ((int)real_index.y - (int)Size/2)/Length);
-    float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.x - (int)Size/2)/Length);
+    float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.y - (int)Size/2)/Length);
     float4 displace_self_com = (0 == Stage && 1 == ComputeLine ) ? CalDisplaceKModule(k_cor, self_displace_input) : self_displace_input;
     float4 displace_pat_com = (0 == Stage && 1 == ComputeLine) ? CalDisplaceKModule(pat_k_cor, pat_displace_input) : pat_displace_input;
     float4 displace_x_complex = CalSum(displace_self_com.xy, displace_pat_com.xy, weight_com, reverse);
@@ -180,12 +180,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(1 == Ping)
     {
         DisplacePongTex[id.xy] = float4(displace_x_complex.x, displace_x_complex.z, displace_z_complex.x, displace_z_complex.z);    
-        //DebugTex[id.xy] = float4(DisplacePongTex[id.xy].x, 0, DisplacePongTex[id.xy].y, 1);
     }
     else
     {
         DisplacePingTex[id.xy] = float4(displace_x_complex.x, displace_x_complex.z, displace_z_complex.x, displace_z_complex.z);   
-        //DebugTex[id.xy] = float4(DisplacePingTex[id.xy].x, 0, DisplacePingTex[id.xy].y, 1);
     }
 
     //normal计算,这里的complex中 xy表示x方向的complex，zw表示z方向的complex
