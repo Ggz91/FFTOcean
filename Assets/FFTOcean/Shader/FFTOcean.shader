@@ -84,7 +84,7 @@
                 float4 half_reflect = float4(normalize(view_dir + _WorldSpaceLightPos0), 1);
                 float spe_factor = saturate(dot(half_reflect, normal));
                 float4 specture = 0.1 * pow(spe_factor, _Gloss) * _LightColor0;
-                res.rgb += specture.rgb;
+                //res.rgb += specture.rgb;
                 return res;
             }
             ENDCG

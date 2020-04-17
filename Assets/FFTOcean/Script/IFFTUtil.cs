@@ -192,7 +192,7 @@ public class IFFTUtil
         {
             CalStageOutput(i);
         }
-        
+      
         //重新对齐一下输入
         bool even = i % 2 != 0;
         //计算列
@@ -228,7 +228,7 @@ public class IFFTUtil
         m_param.ComputeShader.SetInt(CommonData.IFFTComputeStagePingName, ping);
         m_param.ComputeShader.Dispatch(m_kernel, m_param.Size / 8, m_param.Size / 8, 1);
         m_param.ComputeShader.Dispatch(m_jacob_kernel, m_param.Size / 8, m_param.Size / 8, 1);
-        Debug.Log("[IFFTStageCal] frame : " + Time.frameCount.ToString() + " input : " + ping.ToString());
+        //Debug.Log("[IFFTStageCal] frame : " + Time.frameCount.ToString() + " input : " + ping.ToString());
     }
 
     void OnDone()
@@ -249,7 +249,7 @@ public class IFFTUtil
             rt.enableRandomWrite = true;
             rt.format = RenderTextureFormat.ARGBFloat;
             rt.wrapMode = TextureWrapMode.Repeat;
-            rt.filterMode = FilterMode.Point;
+            rt.filterMode = FilterMode.Trilinear;
             rt.Create();
         }
     }

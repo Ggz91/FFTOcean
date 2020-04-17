@@ -169,8 +169,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     {
         HeightPingTex[id.xy] = CalSum(self_com, pat_com, weight_com, reverse );
     }
-    DebugTex[id.xy] = float4(self_input.x, 0, self_input.y,1);
-
+  
     //displace计算
     float2 k_cor = float2(2.0f * PI * ((int)real_index.x - (int)Size/2)/Length, 2.0f * PI * ((int)real_index.y - (int)Size/2)/Length);
     float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.x - (int)Size/2)/Length);
@@ -221,7 +220,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             NormalPingTex[id.xy] *= neg;
         }
         HeightPingTex[id.xy] = float4(HeightPingTex[id.xy].x, 0, HeightPingTex[id.xy].z, 1);
-        HeightPongTex[id.xy] = float4(HeightPongTex[id.xy].x, 0, HeightPingTex[id.xy].z, 1);
+        HeightPongTex[id.xy] = float4(HeightPongTex[id.xy].x, 0, HeightPongTex[id.xy].z, 1);
     }
 }
 [numthreads(8,8,1)]
