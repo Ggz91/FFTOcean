@@ -41,6 +41,7 @@
                 float4 vertex : SV_POSITION;
                 float4 color : TEXCOORD2; //是否为尖浪
                 float3 world_pos : TEXCOORD3; //世界坐标
+                float3 normal : TEXCOORD4; //法线方向
             };
 
             v2f vert (appdata v)
@@ -49,12 +50,13 @@
                 o.uv = v.uv;
                 float height = tex2Dlod(_OceanHeightMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
                 float3 displace = tex2Dlod(_OceanDisplaceMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
+                float3 normal = tex2Dlod(_OceanNormalMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
                 real_pos.y += height * _OceanScale[1];
                 real_pos.x += displace.x * _OceanScale[0];
                 real_pos.z += displace.z * _OceanScale[2];
                 o.vertex = UnityObjectToClipPos(real_pos);
-
+                o.normal = normal;
                 //尖浪相关
                 float jacob = tex2Dlod(_OceanJacobMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
                 o.color = lerp(float4(0, 0, 0, 1), float4(1, 1, 1, 1), jacob);
@@ -69,10 +71,11 @@
                 //尖浪直接返回
                 if(i.color.r > 0.9f )
                 {
-                    //return i.color;
+                    return i.color;
                 }
                 float4 normal = float4(1, 1, 1, 1);
-                normal.xyz = normalize(tex2D(_OceanNormalMap, i.uv).rgb);
+                normal.xyz = normalize(i.normal);
+                normal.xyz == normalize(tex2D(_OceanNormalMap, i.uv).rgb);
                 //计算光照影响
                 //反射光
                 float4 res = _WaterColor;

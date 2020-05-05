@@ -192,7 +192,7 @@ public class IFFTUtil
         {
             CalStageOutput(i);
         }
-
+        
         //重新对齐一下输入
         bool even = i % 2 != 0;
         //计算列
@@ -268,6 +268,8 @@ public class IFFTUtil
         #if _DEBUG_
                 InitTex(ref m_debug_tex);
                 m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
+                m_param.ComputeShader.SetTexture(m_post_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
+                m_param.ComputeShader.SetTexture(m_jacob_kernel, CommonData.IFFTDebugTexName, m_debug_tex);
         #endif
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeHeightPongBufferName, m_height_pong_tex);
         m_param.ComputeShader.SetTexture(m_kernel, CommonData.IFFTComputeDisplacePongBufferName, m_displace_pong_tex);

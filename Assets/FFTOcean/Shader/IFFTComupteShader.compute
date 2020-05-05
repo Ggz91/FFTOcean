@@ -93,14 +93,14 @@ float4 CalJacobDxxDzz(float2 cor, float2 input)
     float cor_mag = CalMagnitude(cor);
     float2 Dxx = cor.x * cor.x / cor_mag * input; 
     float2 Dzz = cor.y * cor.y / cor_mag * input;
-    return float4(Dxx.x, Dxx.y, Dzz.x, Dzz.y);      
+    return float4(Dxx.y, -Dxx.x, Dzz.y, -Dzz.x);      
 }
 
 float4 CalJacobDxzDzx(float2 cor, float2 input)
 {
     float cor_mag = CalMagnitude(cor);
     float2 D = cor.x * cor.y / cor_mag * input;
-    return float4(D.x, D.y, D.x, D.y);
+    return float4(D.y, -D.x, D.y, -D.x);
 }
 
 [numthreads(8, 8,1)]
@@ -194,13 +194,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if(1 == Ping)
     {
         NormalPongTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
-        //DebugTex[id.xy] = float4(NormalPongTex[id.xy].x, 0, NormalPongTex[id.xy].y, 1);
+        
     }
     else
     {
         NormalPingTex[id.xy] = float4(normal_x_complex.x, normal_x_complex.z, normal_z_complex.x, normal_z_complex.z);
-        //DebugTex[id.xy] = float4(NormalPingTex[id.xy].x, 0, NormalPingTex[id.xy].y, 1);
     }
+    
     //最后的符号校正
     if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
@@ -234,7 +234,7 @@ void PostKernel (uint3 id : SV_DispatchThreadID)
     }
     else
     {
-        NormalPongTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
+        NormalPingTex[id.xy] = float4(normal.x, normal.y, normal.z, 1);
     }
     //jacob post
     float4 JacobDxxDzzInput = 1== Ping ? JacobPingDxxDzzTex[id.xy] : JacobPongDxxDzzTex[id.xy];
@@ -243,8 +243,10 @@ void PostKernel (uint3 id : SV_DispatchThreadID)
     float2 Jzz = 1 + JacobScale * JacobDxxDzzInput.zw;
     float2 Jxz = JacobScale * JacobDxzDzxInput.xy;
     float2 Jzx = Jxz;
-    float jacob = Jxx * Jzz - Jxz * Jzx;
-    JacobResTex[id.xy] = 0 >= jacob ? float4(1, 1, 1, 1) : float4(0, 0, 0, 0);
+    float jacob = MulVector(Jxx, Jzz) - MulVector(Jxz, Jzx);
+    JacobResTex[id.xy] = 0 == jacob ? float4(1, 1, 1, 1) : float4(0, 0, 0, 1);
+    //DebugTex[id.xy] = float4(JacobDxxDzzInput.x, 0, JacobDxxDzzInput.y,1);
+
 }
 [numthreads(8, 8, 1)]
 void JacobKernel(uint3 id : SV_DispatchThreadID)
@@ -268,6 +270,7 @@ void JacobKernel(uint3 id : SV_DispatchThreadID)
         pat_cor.x = id.x;
         pat_cor.y = (0 == Stage) ? CalBitReverse(id.y + reverse, TotalStageCount) : (id.y + reverse * (int)GroupSize/2);
     }
+
     float2 k_cor = float2(2.0f * PI * ((int)real_index.x - (int)Size/2)/Length, 2.0f * PI * ((int)real_index.y - (int)Size/2)/Length);
     float2 pat_k_cor = float2(2.0f * PI * ((int)pat_cor.x - (int)Size/2)/Length, 2.0f * PI *((int)pat_cor.x - (int)Size/2)/Length);
     float4 self_Jacob_DxxDzz_input = (1 == Ping) ? JacobPingDxxDzzTex[real_index] : JacobPongDxxDzzTex[real_index];
@@ -312,6 +315,7 @@ void JacobKernel(uint3 id : SV_DispatchThreadID)
         JacobPingDxxDzzTex[id.xy] = Jacob_DxxDzz_com;
         JacobPingDxzDzxTex[id.xy] = Jacob_DxzDzx_com;
     }
+
     if(0 == ComputeLine && (TotalStageCount - 1) == Stage)
     {
         float neg = (((int)id.y - (int)Size / 2 )% 2 == 0) ? 1 : -1;
@@ -326,4 +330,5 @@ void JacobKernel(uint3 id : SV_DispatchThreadID)
             JacobPingDxzDzxTex[id.xy] *= neg;
         }
     }
+    DebugTex[id.xy] = float4(Jacob_DxxDzz_com.x, 0, Jacob_DxxDzz_com.y,1);
 }

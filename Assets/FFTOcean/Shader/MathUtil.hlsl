@@ -59,3 +59,9 @@ float2 MulComplex(float2 l, float2 r)
     float ima = l.x * r.y + l.y * r.x;
     return float2(real, ima);    
 }
+
+//向量点乘
+float MulVector(float2 v1, float2 v2)
+{
+    return v1.x * v2.x + v1.y * v2.y;
+}
