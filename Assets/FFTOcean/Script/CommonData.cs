@@ -11,14 +11,10 @@ public class CommonData
     static public string IFFTComputeHeightPingBufferName = "HeightPingTex";
     static public string IFFTComputeHeightPongBufferName = "HeightPongTex";
     static public string IFFTComputeDisplacePingBufferName = "DisplacePingTex";
+    static public string IFFTComputeJacobInputBufferName = "PostInputTex";
     static public string IFFTComputeDisplacePongBufferName = "DisplacePongTex";
-    static public string IFFTComputeJacobPingDxxDzzBufferName = "JacobPingDxxDzzTex";
-    static public string IFFTComputeJacobPingDxzDzxBufferName = "JacobPingDxzDzxTex";
-    static public string IFFTComputeJacobPongDxxDzzBufferName = "JacobPongDxxDzzTex";
-    static public string IFFTComputeJacobPongDxzDzxBufferName = "JacobPongDxzDzxTex";
     static public string IFFTComputeJacobResBufferName = "JacobResTex";
-    static public string IFFTComputeNormalPingBufferName = "NormalPingTex";
-    static public string IFFTComputeNormalPongBufferName = "NormalPongTex";
+    static public string IFFTComputeNormalResBufferName = "NormalResTex";
     static public string IFFTComputeStageName = "Stage";
     static public string IFFTComputeStageGroupName = "GroupSize";
     static public string IFFTComputeStagePingName = "Ping";
@@ -38,7 +34,6 @@ public class CommonData
     static public string IFFTComputeLenghtName = "Length";
     static public string IFFTComputeCalLineName = "ComputeLine";
     static public string IFFTComputeTotalStageCountName = "TotalStageCount";
-    static public string IFFTComputeJacobScaleName = "JacobScale";
     static public string IFFTLutTexName = "LutTex";
     static public string OceanMatHeightTexName = "_OceanHeightMap";
     static public string OceanMatDisplaceTexName = "_OceanDisplaceMap";

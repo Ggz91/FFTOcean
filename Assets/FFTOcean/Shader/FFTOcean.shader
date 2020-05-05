@@ -58,8 +58,7 @@
                 o.vertex = UnityObjectToClipPos(real_pos);
                 o.normal = normal;
                 //尖浪相关
-                float jacob = tex2Dlod(_OceanJacobMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
-                o.color = lerp(float4(0, 0, 0, 1), float4(1, 1, 1, 1), jacob);
+                o.color = tex2Dlod(_OceanJacobMap, float4(o.uv.x, o.uv.y, 0, 1)).r;
 
                 //世界坐标
                 o.world_pos = mul(unity_ObjectToWorld, v.vertex).rgb;
@@ -68,8 +67,9 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
+                float4 color = tex2D(_OceanJacobMap, float4(i.uv.x, i.uv.y, 0, 1));
                 //尖浪直接返回
-                if(i.color.r > 0.9f )
+                if(color.r >= 0.9 )
                 {
                     return i.color;
                 }
