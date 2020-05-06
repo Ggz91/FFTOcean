@@ -211,11 +211,12 @@ void PostKernel (uint3 id : SV_DispatchThreadID)
     float2 up_index = CheckRange(id.xy + float2(0, 1));
     float2 down_index = CheckRange(id.xy - float2(0, 1));
 
-    float2 dDdy =  0.5 * (PostInputTex[up_index].xz - PostInputTex[down_index].xz) / 30;
-    float2 dDdx = 0.5 * (PostInputTex[right_index].xz - PostInputTex[left_index].xz) / 30;
+    float2 dDdy =  0.5 * (PostInputTex[up_index].xz - PostInputTex[down_index].xz);
+    float2 dDdx = 0.5 * (PostInputTex[right_index].xz - PostInputTex[left_index].xz);
     float jacob = (1 + dDdy.y) * (1 + dDdx.x) - dDdx.y * dDdy.x;
-    jacob = max(0, 1 - jacob);
-    /*jacob = 1 + 3 * smoothstep(1.2, 1.8, jacob);
+    jacob = max(0, jacob);
+    /*jacob = max(0, 1 - jacob);
+    jacob = 1 + 3 * smoothstep(1.2, 1.8, jacob);
     jacob = min(jacob, 1);
     jacob = smoothstep(0, 1, jacob);*/
     JacobResTex[id.xy] = float4(jacob, jacob, jacob, 1);

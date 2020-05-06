@@ -15,8 +15,8 @@ MonoBehaviour:
   SpectrumParam:
     Resolution: 64
     ComputeShader: {fileID: 7200000, guid: a89d54e0b44bfa645a93d0f63801a3a6, type: 3}
-    Wind: {x: 4, y: 0}
-    Amplitude: 4
+    Wind: {x: 16, y: 0}
+    Amplitude: 10
     Size: 31.5
   IFFTParam:
     ComputeShader: {fileID: 7200000, guid: 302b0b700232f334eb711ba697a93e2d, type: 3}
@@ -26,4 +26,4 @@ MonoBehaviour:
     JacobScale: 0.01
   OceanMatParam:
     HorizonScale: 0.01
-    VerticalScale: 0.02
+    VerticalScale: 0.2

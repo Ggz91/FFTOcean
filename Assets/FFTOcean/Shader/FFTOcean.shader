@@ -4,6 +4,7 @@
     {
         _WaterColor("WaterColor", Color) = (0.1, 0.3, 0.8, 1)
         _Gloss("SpecGloss", float) = 128
+        _JacobScale("JacobScale", Range(0, 1)) = 0.01
     }
     SubShader
     {
@@ -24,7 +25,7 @@
             float _OceanScale[3];
             float4 _WaterColor;
             float _Gloss;
-
+            float _JacobScale;
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
 
@@ -53,8 +54,8 @@
                 float3 normal = tex2Dlod(_OceanNormalMap, float4(o.uv.x, o.uv.y, 0, 1)).rgb;
                 float4 real_pos = v.vertex;
                 real_pos.y += height * _OceanScale[1];
-                real_pos.x += displace.x * _OceanScale[0];
-                real_pos.z += displace.z * _OceanScale[2];
+                real_pos.x -= displace.x * _OceanScale[0];
+                real_pos.z -= displace.z * _OceanScale[2];
                 o.vertex = UnityObjectToClipPos(real_pos);
                 o.normal = normal;
                 //尖浪相关
@@ -67,12 +68,9 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float4 color = tex2D(_OceanJacobMap, float4(i.uv.x, i.uv.y, 0, 1));
+                float4 jacob = tex2D(_OceanJacobMap, float4(i.uv.x, i.uv.y, 0, 1));
                 //尖浪直接返回
-                if(color.r >= 0.9 )
-                {
-                    return i.color;
-                }
+               
                 float4 normal = float4(1, 1, 1, 1);
                 normal.xyz = normalize(i.normal);
                 normal.xyz == normalize(tex2D(_OceanNormalMap, i.uv).rgb);
@@ -86,8 +84,9 @@
                 float3 view_dir = _WorldSpaceCameraPos.xyz - i.world_pos;
                 float4 half_reflect = float4(normalize(view_dir + _WorldSpaceLightPos0), 1);
                 float spe_factor = saturate(dot(half_reflect, normal));
-                float4 specture = 0.1 * pow(spe_factor, _Gloss) * _LightColor0;
+                float4 specture = 0.1 * pow(spe_factor, _Gloss) ;
                 //res.rgb += specture.rgb;
+                res.rgb += jacob.rgb * _JacobScale;
                 return res;
             }
             ENDCG
