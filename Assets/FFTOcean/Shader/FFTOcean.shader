@@ -4,7 +4,7 @@
     {
         _WaterColor("WaterColor", Color) = (0.1, 0.3, 0.8, 1)
         _Gloss("SpecGloss", float) = 128
-        _JacobScale("JacobScale", Range(0, 1)) = 0.01
+        _JacobScale("JacobScale", Range(0, 1)) = 0.025
     }
     SubShader
     {
@@ -72,8 +72,8 @@
                 //尖浪直接返回
                
                 float4 normal = float4(1, 1, 1, 1);
-                normal.xyz = normalize(i.normal);
-                normal.xyz == normalize(tex2D(_OceanNormalMap, i.uv).rgb);
+                //normal.xyz = normalize(i.normal);
+                normal.xyz = normalize(tex2D(_OceanNormalMap, i.uv).rgb);
                 //计算光照影响
                 //反射光
                 float4 res = _WaterColor;
@@ -81,11 +81,11 @@
                 float4 relfection = rel_factor * _LightColor0 * _WaterColor;
                 res.rgb += relfection.rgb;
                 //高光
-                float3 view_dir = _WorldSpaceCameraPos.xyz - i.world_pos;
-                float4 half_reflect = float4(normalize(view_dir + _WorldSpaceLightPos0), 1);
-                float spe_factor = saturate(dot(half_reflect, normal));
-                float4 specture = 0.1 * pow(spe_factor, _Gloss) ;
-                //res.rgb += specture.rgb;
+                float3 view_dir = normalize(_WorldSpaceCameraPos.xyz - i.world_pos);
+                float4 half_reflect = float4(normalize(view_dir + normalize(_WorldSpaceLightPos0)), 1);
+                float spe_factor = max(0,dot(half_reflect.rgb, normal.rgb));
+                float4 specture = _LightColor0 * pow(spe_factor, _Gloss) ;
+                res.rgb += specture.rgb;
                 res.rgb += jacob.rgb * _JacobScale;
                 return res;
             }

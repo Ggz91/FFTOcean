@@ -11,7 +11,7 @@ public class RealTimeComputeComponent
     1、Mesh相关
     2、海洋参数设置")]
     [MinValue(1)]
-    public int Resolution = 64;
+    public int Resolution = 128;
 
     [BoxGroup("Mesh Param")]
     public Vector3 Position = Vector3.zero;
@@ -25,17 +25,17 @@ public class RealTimeComputeComponent
 
 
     [BoxGroup("Spectrum")]
-    public Vector2 Wind = new Vector2(4, 0);
+    public Vector2 Wind = new Vector2(16, 0);
 
     [BoxGroup("Spectrum")]
-    public float Amplitude = 4f;
+    public float Amplitude = 10f;
 
     [BoxGroup("IFFT")]
     public ComputeShader IFFTShader;
 
     [BoxGroup("Material")]
     [InfoBox("Scale.x表示x z方向的位移影响，Scale.y表示y方向的位移影响")]
-    public Vector2 Scale = new Vector2(0.01f, 0.02f);
+    public Vector2 Scale = new Vector2(0.02f, 0.05f);
 
     [Button("Gen Ocean")]
     void GenOcean()

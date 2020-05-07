@@ -26,7 +26,7 @@ public class PreComputeWIndowComponent
     1. 蝶形lut")]
     [BoxGroup("蝶形lut")]
     [MinValue(1)]
-    public int Size = 64;
+    public int Size = 128;
 
     [BoxGroup("蝶形lut")]
     public ComputeShader LutComputeShader;
