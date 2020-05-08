@@ -72,14 +72,14 @@ public class RealTimeComputeComponent
         //添加材质
         AddMaterial(obj);
     }
-    void FillMaterialData(ref FFTOceanMonoComponent.InitParam param)
+    void FillMaterialData(ref IFFTOceanInitConfig param)
     {
         param.OceanMatParam.HorizonScale = Scale.x;
         param.OceanMatParam.VerticalScale = Scale.y;
     }
     void FillObjData(GameObject obj)
     {
-        FFTOceanMonoComponent.InitParam init_param = ScriptableObject.CreateInstance<FFTOceanMonoComponent.InitParam>();
+        IFFTOceanInitConfig init_param = ScriptableObject.CreateInstance<IFFTOceanInitConfig>();
         //填充相关数据
         FillSpectrumData(ref init_param);
         FillIFFTData(ref init_param);
@@ -90,7 +90,7 @@ public class RealTimeComputeComponent
         CommonUtil.SaveAsset(init_param, UICommonData.IFFTOceanInitConfig);
     }
 
-    void FillSpectrumData(ref FFTOceanMonoComponent.InitParam param)
+    void FillSpectrumData(ref IFFTOceanInitConfig param)
     {
         param.SpectrumParam.Resolution = Resolution;
         param.SpectrumParam.Size = (Resolution - 1) * UnitSize;
@@ -99,7 +99,7 @@ public class RealTimeComputeComponent
         param.SpectrumParam.ComputeShader = SpectrumShader;
     }
 
-    void FillIFFTData(ref FFTOceanMonoComponent.InitParam param)
+    void FillIFFTData(ref IFFTOceanInitConfig param)
     {
         param.IFFTParam.Size = Resolution;
         param.IFFTParam.Length = (Resolution - 1) * UnitSize;

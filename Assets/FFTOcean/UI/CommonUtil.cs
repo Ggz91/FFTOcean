@@ -46,6 +46,7 @@ public class CommonUtil
             Directory.CreateDirectory(folder_path);
         }
         AssetDatabase.CreateAsset(asset, path);
+        AssetDatabase.SaveAssets();
     }
 
     static public Object LoadAsset(string path, System.Type type)

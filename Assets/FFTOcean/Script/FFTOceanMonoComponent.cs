@@ -13,19 +13,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
         public float VerticalScale;
     }
 
-    [System.Serializable]
-    public class InitParam : ScriptableObject
-    {
-        [SerializeField]
-        public SpectrumUtil.InitParam SpectrumParam;
-        [SerializeField]
-        public IFFTUtil.InitParam IFFTParam;
-        [SerializeField]
-        public MatParam OceanMatParam;
-    };
-
     [SerializeField]
-    public InitParam InitParamData;
+    public IFFTOceanInitConfig InitParamData;
     SpectrumUtil m_spectrum_util = new SpectrumUtil();
     IFFTUtil m_ifft_util = new IFFTUtil();
     #endregion
@@ -33,7 +22,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
     #region  method
     void InitConfig()
     {
-        InitParam param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(InitParam)) as InitParam;
+        IFFTOceanInitConfig param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(IFFTOceanInitConfig)) as IFFTOceanInitConfig;
         InitData(param);
     }
 
@@ -59,7 +48,7 @@ public class FFTOceanMonoComponent : MonoBehaviour
         float[] scales = {InitParamData.OceanMatParam.HorizonScale, InitParamData.OceanMatParam.VerticalScale, InitParamData.OceanMatParam.HorizonScale};
         mat?.SetFloatArray(CommonData.OceanMatScaleName, scales);
     }
-    public void InitData(InitParam initParam)
+    public void InitData(IFFTOceanInitConfig initParam)
     {
         InitParamData = initParam;
 
