@@ -22,7 +22,7 @@ MonoBehaviour:
     ComputeShader: {fileID: 7200000, guid: 302b0b700232f334eb711ba697a93e2d, type: 3}
     Size: 128
     Length: 63.5
-    BufferFlyLutTex: {fileID: 8400000, guid: 3183ac621a80a734b98d482bb8042b32, type: 2}
+    BufferFlyLutTex: {fileID: 0}
     JacobScale: 0.02
   OceanMatParam:
     HorizonScale: 0.02

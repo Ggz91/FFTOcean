@@ -24,7 +24,7 @@ public class FFTOceanEidtorWindow : OdinMenuEditorWindow
         m_tree.Selection.SupportsMultiSelect = false;
         m_tree.Add("预计算", m_pre_compute_component);
         m_tree.Add("实时计算的相关设置", m_realtime_compute_component);
-        TrySelectMenuItemWithObject(m_pre_compute_component);
+        //TrySelectMenuItemWithObject(m_pre_compute_component);
         return m_tree;
     }
     void OnEnterWindow()

@@ -47,6 +47,7 @@ public class CommonUtil
         }
         AssetDatabase.CreateAsset(asset, path);
         AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     static public Object LoadAsset(string path, System.Type type)

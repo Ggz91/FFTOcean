@@ -4,6 +4,8 @@ using UnityEngine;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
+using System.IO;
+using UnityEngine.UI;
 
 public class PreComputeWIndowComponent 
 {
@@ -39,7 +41,7 @@ public class PreComputeWIndowComponent
         FillLutInitParam(out param);
         m_lut_util.Init(param);
         RenderTexture rt = m_lut_util.Execute();
-        //CommonUtil.SaveRenderTextureToPNG(rt, UICommonData.IFFTOceanLutPNGPath);
+        CommonUtil.SaveRenderTextureToPNG(rt, UICommonData.IFFTOceanLutPNGPath);
         RenderTexture.active = null;
         CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
         m_lut_util.Leave();
@@ -48,6 +50,7 @@ public class PreComputeWIndowComponent
 
     public void Enter()
     {
+        Debug.Log("================[GenLut] Enter================");
         InitDefaultValues();
     }
     void InitDefaultComputeShader()
@@ -55,11 +58,46 @@ public class PreComputeWIndowComponent
         string default_compute_shader = @"Assets/FFTOcean/Shader/LutComputeShader.compute";
         LutComputeShader = AssetDatabase.LoadAssetAtPath(default_compute_shader, typeof(ComputeShader)) as ComputeShader;
     }
+    static void LoadSavedLutTex()
+    {
+        Debug.Log("[LoadSavedLutTex]");
+        FileStream stream = File.Open(UICommonData.IFFTOceanLutPNGPath, FileMode.Open, FileAccess.Read);
+        stream.Seek(0, SeekOrigin.Begin);
+        byte[] bytes = new byte[stream.Length];
+        stream.Read(bytes, 0, (int)stream.Length);
+        stream.Close();
+        stream.Dispose();
+        stream = null;
+        Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+        tex.LoadImage(bytes);
+        tex.Apply();
+        //debug
+        RenderTexture rt = new RenderTexture(tex.width, tex.height, 32);
+        rt.enableRandomWrite = true;
+        rt.format = RenderTextureFormat.Default;
+        rt.filterMode = FilterMode.Point;
+        rt.Create();
+        RenderTexture cur = RenderTexture.active;
+        RenderTexture.active = null;
+        Graphics.Blit(tex, rt);
+        RenderTexture.active = cur;
+        if(Directory.Exists(UICommonData.IFFTOceanLutTexPath))
+        {
+            Directory.Delete(UICommonData.IFFTOceanLutTexPath);
+        }
+        CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
+    }
+    
+    public static void PreHandle()
+    {
+        LoadSavedLutTex();
+    }
 
     void InitDefaultValues()
     {
         //默认的compute shader
         InitDefaultComputeShader();
+        LoadSavedLutTex();
     }
     #endregion
 }
