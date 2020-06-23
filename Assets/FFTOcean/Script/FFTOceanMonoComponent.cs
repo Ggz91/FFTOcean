@@ -26,6 +26,10 @@ public class FFTOceanMonoComponent : MonoBehaviour
         IFFTOceanInitConfig param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(IFFTOceanInitConfig)) as IFFTOceanInitConfig;
         //主动更新一下最新的rendertexture
         param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
+        if(null == param.IFFTParam.BufferFlyLutTex)
+        {
+            param.IFFTParam.BufferFlyLutTex = PreComputeWIndowComponent.LoadSavedLutTex();
+        }
         InitData(param);
     }
 

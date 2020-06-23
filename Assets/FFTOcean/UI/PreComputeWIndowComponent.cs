@@ -41,7 +41,7 @@ public class PreComputeWIndowComponent
         FillLutInitParam(out param);
         m_lut_util.Init(param);
         RenderTexture rt = m_lut_util.Execute();
-        CommonUtil.SaveRenderTextureToPNG(rt, UICommonData.IFFTOceanLutPNGPath);
+        CommonUtil.SaveRenderTextureToBytes(rt, UICommonData.IFFTOceanLutBytesPath);
         RenderTexture.active = null;
         CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
         m_lut_util.Leave();
@@ -58,9 +58,9 @@ public class PreComputeWIndowComponent
         string default_compute_shader = @"Assets/FFTOcean/Shader/LutComputeShader.compute";
         LutComputeShader = AssetDatabase.LoadAssetAtPath(default_compute_shader, typeof(ComputeShader)) as ComputeShader;
     }
-    static void LoadSavedLutTex()
+    public static RenderTexture LoadSavedLutTex()
     {
-        FileStream stream = File.Open(UICommonData.IFFTOceanLutPNGPath, FileMode.Open, FileAccess.Read);
+        FileStream stream = File.Open(UICommonData.IFFTOceanLutBytesPath, FileMode.Open, FileAccess.Read);
         stream.Seek(0, SeekOrigin.Begin);
         byte[] bytes = new byte[stream.Length];
         stream.Read(bytes, 0, (int)stream.Length);
@@ -68,16 +68,18 @@ public class PreComputeWIndowComponent
         stream.Dispose();
         stream = null;
         Texture2D tex = new Texture2D(128, 8, TextureFormat.RGBAFloat, false);
-        tex.LoadImage(bytes);
+        tex.LoadRawTextureData(bytes);
         tex.Apply();
+        
         //debug
         RenderTexture rt = new RenderTexture(tex.width, tex.height, 32, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.sRGB);
         rt.enableRandomWrite = true;
         rt.filterMode = FilterMode.Point;
         rt.Create();
+        Material copy_mat = new Material(Shader.Find("Unlit/CopyPixelShader"));
         RenderTexture cur = RenderTexture.active;
         RenderTexture.active = null;
-        Graphics.Blit(tex, rt);
+        Graphics.Blit(tex, rt, copy_mat, 0);
         RenderTexture.active = cur;
         if(Directory.Exists(UICommonData.IFFTOceanLutTexPath))
         {
@@ -85,11 +87,12 @@ public class PreComputeWIndowComponent
         }
         CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
         Debug.Log("[LoadSavedLutTex] done");
+        return rt;
     }
     
     public static void PreHandle()
     {
-        LoadSavedLutTex();
+       LoadSavedLutTex();
     }
 
     void InitDefaultValues()

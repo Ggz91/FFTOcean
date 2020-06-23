@@ -10,6 +10,6 @@ public class UICommonData
    static public string IFFTOceanSpectrumRTPath = @"Assets/BakedTextures/SpectrumTex.renderTexture";
    static public string IFFTOceanSpectrumPNGPath = @"Assets/BakedTextures/SpectrumPNG.png";
    static public string IFFTOceanLutTexPath = @"Assets/BakedTextures/LutTex.asset";
-   static public string IFFTOceanLutPNGPath = @"Assets/BakedTextures/LutTex.png";
+   static public string IFFTOceanLutBytesPath = @"Assets/BakedTextures/LutTex.bytes";
    
 }

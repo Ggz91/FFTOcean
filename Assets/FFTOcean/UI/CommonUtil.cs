@@ -7,7 +7,7 @@ using UnityEditor;
 public class CommonUtil
 {
     static float m_last_time;
-    static public void SaveRenderTextureToPNG(RenderTexture rt, string path)
+    static public void SaveRenderTextureToBytes(RenderTexture rt, string path)
     {
         //io限制
         float delta_time = Time.time - m_last_time;
@@ -21,7 +21,7 @@ public class CommonUtil
         RenderTexture.active = rt;
         Texture2D tex = new Texture2D(rt.width, rt.height, TextureFormat.RGBAFloat, false);
         tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
-        byte[] pixels = tex.EncodeToPNG();
+        byte[] pixels = tex.GetRawTextureData();
         string folder_path = path.Substring(0, path.LastIndexOf(@"/"));
         if(!Directory.Exists(folder_path))
         {
