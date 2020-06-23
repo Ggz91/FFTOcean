@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 
 public class FFTOceanMonoComponent : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class FFTOceanMonoComponent : MonoBehaviour
     void InitConfig()
     {
         IFFTOceanInitConfig param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(IFFTOceanInitConfig)) as IFFTOceanInitConfig;
+        //主动更新一下最新的rendertexture
+        param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
         InitData(param);
     }
 

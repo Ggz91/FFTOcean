@@ -60,7 +60,6 @@ public class PreComputeWIndowComponent
     }
     static void LoadSavedLutTex()
     {
-        Debug.Log("[LoadSavedLutTex]");
         FileStream stream = File.Open(UICommonData.IFFTOceanLutPNGPath, FileMode.Open, FileAccess.Read);
         stream.Seek(0, SeekOrigin.Begin);
         byte[] bytes = new byte[stream.Length];
@@ -68,13 +67,12 @@ public class PreComputeWIndowComponent
         stream.Close();
         stream.Dispose();
         stream = null;
-        Texture2D tex = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+        Texture2D tex = new Texture2D(128, 8, TextureFormat.RGBAFloat, false);
         tex.LoadImage(bytes);
         tex.Apply();
         //debug
-        RenderTexture rt = new RenderTexture(tex.width, tex.height, 32);
+        RenderTexture rt = new RenderTexture(tex.width, tex.height, 32, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.sRGB);
         rt.enableRandomWrite = true;
-        rt.format = RenderTextureFormat.Default;
         rt.filterMode = FilterMode.Point;
         rt.Create();
         RenderTexture cur = RenderTexture.active;
@@ -86,6 +84,7 @@ public class PreComputeWIndowComponent
             Directory.Delete(UICommonData.IFFTOceanLutTexPath);
         }
         CommonUtil.SaveAsset(rt, UICommonData.IFFTOceanLutTexPath);
+        Debug.Log("[LoadSavedLutTex] done");
     }
     
     public static void PreHandle()

@@ -19,7 +19,7 @@ public class CommonUtil
         
         RenderTexture cur_rt = RenderTexture.active;
         RenderTexture.active = rt;
-        Texture2D tex = new Texture2D(rt.width, rt.height);
+        Texture2D tex = new Texture2D(rt.width, rt.height, TextureFormat.RGBAFloat, false);
         tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
         byte[] pixels = tex.EncodeToPNG();
         string folder_path = path.Substring(0, path.LastIndexOf(@"/"));
