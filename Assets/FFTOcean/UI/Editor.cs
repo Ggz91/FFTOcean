@@ -16,7 +16,6 @@ public class FFTOceanEidtorWindow : OdinMenuEditorWindow
     OdinMenuTree m_tree;
     PreComputeWIndowComponent m_pre_compute_component = new PreComputeWIndowComponent();
     RealTimeComputeComponent m_realtime_compute_component = new RealTimeComputeComponent();
-    bool m_open = false;
     protected override OdinMenuTree BuildMenuTree()
     {
         m_tree = new OdinMenuTree();

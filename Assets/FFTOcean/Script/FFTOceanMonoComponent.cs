@@ -18,30 +18,44 @@ public class FFTOceanMonoComponent : MonoBehaviour
     public IFFTOceanInitConfig InitParamData;
     SpectrumUtil m_spectrum_util = new SpectrumUtil();
     IFFTUtil m_ifft_util = new IFFTUtil();
+
+    bool m_init = false;
+    bool m_init_done = false;
     #endregion
 
     #region  method
-    void InitConfig()
+    IEnumerator InitConfig()
     {
+        Debug.Log("[InitConfig] Enter");
         IFFTOceanInitConfig param = CommonUtil.LoadAsset(UICommonData.IFFTOceanInitConfig, typeof(IFFTOceanInitConfig)) as IFFTOceanInitConfig;
         //主动更新一下最新的rendertexture
-        param.IFFTParam.BufferFlyLutTex = AssetDatabase.LoadAssetAtPath(UICommonData.IFFTOceanLutTexPath, typeof(RenderTexture)) as RenderTexture;
-        if(null == param.IFFTParam.BufferFlyLutTex)
+        param.IFFTParam.BufferFlyLutTex = null;
+        while(null == param.IFFTParam.BufferFlyLutTex)
         {
-            param.IFFTParam.BufferFlyLutTex = PreComputeWIndowComponent.LoadSavedLutTex();
+            if(!m_init)
+            {
+                param.IFFTParam.BufferFlyLutTex = PreComputeWIndowComponent.LoadSavedLutTex();
+            }
+            m_init = true;
+            Debug.Log("[InitConfig]");
+            yield return 0;
         }
+        //render texture需要等一帧
+        yield return 0;
         InitData(param);
     }
-
     void Start()
     {
-        InitConfig();
+        m_init = false;
+        m_init_done = false;
+        StartCoroutine(InitConfig());
     }
 
     void InitSpectrum()
     {
         m_spectrum_util.InitData(InitParamData.SpectrumParam);
         Debug.Log("[SpectrumUtil] init done");
+       
     }
 
     void InitIFFTUtil()
@@ -57,15 +71,24 @@ public class FFTOceanMonoComponent : MonoBehaviour
     }
     public void InitData(IFFTOceanInitConfig initParam)
     {
+        Debug.Log("[InitData]");
+        m_init = true;
+        m_init_done = true;
+
         InitParamData = initParam;
 
         InitSpectrum();
         InitIFFTUtil();
         InitMat();
     }
-
+    
     void Update()
     {
+        if(!m_init_done)
+        {
+            return;
+        }
+
         //1、生成spectrum
         GenSpectrum();
 
